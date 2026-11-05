@@ -1,5 +1,5 @@
 // Offline cache for the app shell. YouTube itself always needs the network.
-const CACHE = "genduju-v4";
+const CACHE = "genduju-v5";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {

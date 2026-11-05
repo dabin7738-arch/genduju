@@ -67,6 +67,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* stage */
 .stage{background:var(--screen);color:var(--screen-ink);border-radius:var(--r);overflow:hidden;position:relative}
 .vid{position:relative;aspect-ratio:16/9;background:#000;max-width:100%}
+.vid.vert{aspect-ratio:9/16;max-height:62vh;margin:0 auto;width:auto;height:min(62vh,calc((100vw - 32px) * 16 / 9))}
 .vid iframe,.vid #yt{position:absolute;inset:0;width:100%;height:100%;border:0}
 .mask{position:absolute;left:0;right:0;background:#000;display:flex;align-items:center;justify-content:center;color:#6c7774;font-size:12px;letter-spacing:.05em;pointer-events:none}
 .vid-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--screen-muted);font-size:14px;background:#000}
@@ -668,6 +669,15 @@ const DRAMAS = [
     tip: "말장난 장면은 건너뛰고 일상 대화 장면만 고르세요.", q: "爱情公寓 第一季 第1集", ch: "YOUKU 공식", eps: [["1화","mV0HQj44vtM"],["2화","PoxpC5abUc4"]] }
 ];
 
+const SHORTS = [
+  ["1-1","IqD_qUscKS0",11,"주말 계획"],["2-4","KZD7Bh0ruLw",10,"요리가 제일 좋은 운동"],["3-4","nhSRaz4ZzX0",13,"라운지에서 차 한잔"],
+  ["4-2","mMyYCGKLzZg",13,"좋아하는 여자 이야기"],["5-3","qHgRCyQGo8A",13,"좋아하는 계절"],["6-4","FmsaX8353WA",11,"커피를 마실까 말까"],
+  ["7-1","3EFsEMTD75g",13,"그 예쁜 새 동료"],["8-4","uSgfBvK9MGc",13,"먹고 싶은 거 먹어"],["10-3","rkaJdPa1HOg",14,"새 자전거가 필요해"],
+  ["11-1","s0Gf3iFiD9M",13,"부탁 좀 들어줄래?"],["11-3","07AWDts23aw",13,"맥주 한잔하자!"],["12-4","LtL98TFBVwg",17,"연필 잊지 마"],
+  ["13-2","k7QsOxXIhmQ",23,"저 여자는 누구야?"],["14-1","TAnc9u-yaS4",17,"남자들도 집안일 좀"],["19-3","epLc9sfxilU",20,"이 선물은 못 줘"],
+  ["20-2","LNXXmjo2pHI",20,"사랑만이 사람을 바꾼다"],["20-4","V19f_nXdfc4",20,"다 해결될 거야"]
+].map(([ls, vid, len, ko]) => ({ ls, vid, len, ko }));
+const SHORTS_ID = "shorts-hsk3";
 const CUSTOM_PY = {
   "好嘞": "hǎo lei", "睡不着": "shuì bu zháo", "东西": "dōng xi", "清楚": "qīng chu", "便宜": "pián yi", "呗": "bei",
   "麻烦": "má fan", "师傅": "shī fu", "朋友": "péng you", "毛肚": "máo dǔ", "误不了": "wù bu liǎo", "晚上": "wǎn shang",
@@ -770,13 +780,28 @@ function segsFor(s, e, cuts) {
 /* ---- YouTube scenes: practise a continuous stretch (default 1 minute), no manual line marking ---- */
 const LENS = [30, 60, 120];
 const CHUNK = 4;
-function ytRange() { const sc = S.scene; sc.s0 = Math.max(0, sc.s0 ?? Math.floor(sc.t0 || 0)); sc.len = LENS.includes(sc.len) ? sc.len : 60; return { s: sc.s0, e: sc.s0 + sc.len }; }
+function isSeries() { return isYT() && !!S.scene.series; }
+function curShort() { const sc = S.scene; return sc.list[Math.min(Math.max(0, sc.cur | 0), sc.list.length - 1)]; }
+function sceneKey() { return isSeries() ? curShort().vid : ytRange().s; }
+function ytRange() { const sc = S.scene; if (sc.series) { const it = curShort(); return { s: 0, e: it.len + 0.5 }; } sc.s0 = Math.max(0, sc.s0 ?? Math.floor(sc.t0 || 0)); sc.len = LENS.includes(sc.len) ? sc.len : 60; return { s: sc.s0, e: sc.s0 + sc.len }; }
 function ytDone() { return (S.scene.done ||= []); }
+function setShort(i) { const sc = S.scene; sc.cur = Math.min(Math.max(0, i), sc.list.length - 1); sc.vid = curShort().vid; sc.t0 = 0; saveMine(); mountYT(sc); renderLine(); renderList(); renderTopPg(); }
+function shortsScene() {
+  let sc = S.mine.find(x => x.id === SHORTS_ID);
+  if (!sc) { sc = { id: SHORTS_ID, kind: "yt", series: true, title: "HSK 3 드라마 쇼츠", sub: "실제 배우 · 한자+병음+영어 자막", cur: 0, done: [], cuts: {}, created: Date.now() }; S.mine.push(sc); }
+  sc.list = SHORTS; sc.cur = Math.min(sc.cur | 0, SHORTS.length - 1); sc.vid = SHORTS[sc.cur].vid; saveMine();
+  return sc;
+}
+function nextShortIdx(sc) { const d = sc.done || []; const i = sc.list.findIndex(x => !d.includes(x.vid)); return i < 0 ? 0 : i; }
+function openShorts(play5) {
+  const sc = shortsScene(); if (play5) { sc.cur = nextShortIdx(sc); sc.vid = sc.list[sc.cur].vid; saveMine(); }
+  switchView("vPractice"); selectScene(sc.id);
+}
 function setRange(s0) { S.scene.s0 = Math.max(0, Math.floor(s0)); saveMine(); renderLine(); renderList(); renderTopPg(); }
 async function playScene(my) {
   const { s, e } = ytRange();
   const steps = S.mode === 0 ? [1, 2, 3, 4, 5] : [S.mode];
-  const key = String(s); S.scene.cuts ||= {};
+  const key = String(sceneKey()); S.scene.cuts ||= {};
   for (const m of steps) {
     if (my !== runId) return;
     setDisplay(m);
@@ -807,7 +832,13 @@ async function playScene(my) {
     }
   }
   if (my !== runId) return;
-  const d = ytDone(); if (!d.includes(s)) { d.push(s); saveMine(); }
+  const dk = sceneKey(), d = ytDone(); if (!d.includes(dk)) { d.push(dk); saveMine(); }
+  if (isSeries()) {
+    const sc = S.scene, nxt = sc.list.findIndex((x, i) => i > sc.cur && !d.includes(x.vid));
+    if (S.auto && nxt >= 0 && my === runId) { setShort(nxt); await sleep(1200); if (my !== runId) return; return playScene(my); }
+    stop(); if (S.mode === 0) setDisplay(2); setPhase("end"); renderList(); renderTopPg(); renderLine();
+    toast(nxt >= 0 ? "끝! '다음'으로 다음 쇼츠." : "17편 모두 끝! 처음부터 다시 1.0×로 도전해 보세요."); return;
+  }
   stop(); if (S.mode === 0) setDisplay(2); setPhase("end");
   renderList(); renderTopPg(); renderLine();
   toast("이 장면 끝! '다음' 버튼으로 다음 " + (S.scene.len >= 60 ? S.scene.len / 60 + "분" : S.scene.len + "초") + "으로 넘어가세요.");
@@ -1089,7 +1120,7 @@ async function play(from, once) {
 }
 function stop() { runId++; haltAll(); cutting = null; const st = document.getElementById("steps"); if (st) st.hidden = true; const cb = document.getElementById("cutBtn"); if (cb) cb.hidden = true; S.playing = false; renderPlayBtn(); setPhase("idle"); unwake(); }
 function togglePlay() { TTS.unlock(); if (S.playing) stop(); else { ensureMic(); play(S.idx); } }
-function go(d) { TTS.unlock(); if (isYT()) { const wasPlaying = S.playing; stop(); setRange(ytRange().s + d * S.scene.len); if (wasPlaying) play(); return; } const n = items().length; if (!n) return; const j = Math.min(n - 1, Math.max(0, S.idx + d)); if (S.playing) play(j); else setIdx(j); }
+function go(d) { TTS.unlock(); if (isSeries()) { const wp = S.playing; stop(); setShort(S.scene.cur + d); if (wp) play(); return; } if (isYT()) { const wasPlaying = S.playing; stop(); setRange(ytRange().s + d * S.scene.len); if (wasPlaying) play(); return; } const n = items().length; if (!n) return; const j = Math.min(n - 1, Math.max(0, S.idx + d)); if (S.playing) play(j); else setIdx(j); }
 function bump(it) { const p = (PROG[it.id] ||= { r: 0, ok: false }); p.r = (p.r || 0) + 1; saveProg(); updateRow(it); }
 
 /* ================= render ================= */
@@ -1120,9 +1151,10 @@ function renderSceneHead() {
   $("#sceneT").textContent = sc.title || "제목 불러오는 중";
   $("#sceneT").lang = /[一-鿿]/.test(sc.title || "") ? "zh-CN" : "ko";
   $("#sceneS").textContent = sc.sub || "";
-  $("#sceneTools").hidden = !!sc.builtin;
+  $("#sceneTools").hidden = !!sc.builtin || !!sc.series;
 }
 function renderTopPg() {
+  if (isSeries()) { $("#pgOk").textContent = ytDone().length; $("#pgAll").textContent = S.scene.list.length; return; }
   if (isYT()) { $("#pgOk").textContent = ytDone().length; $("#pgAll").textContent = "장면"; return; }
   const list = items(); let ok = 0; for (const it of list) if (pOf(it).ok) ok++;
   $("#pgOk").textContent = ok; $("#pgAll").textContent = list.length;
@@ -1132,7 +1164,9 @@ function renderStage() {
   el.stage.classList.toggle("tts", !yt);
   $("#vid").hidden = !yt; $("#mark").hidden = !yt;
   const mask = $("#mask"); mask.hidden = !(yt && S.mask);
-  mask.style.height = S.maskH + "%"; mask.style.bottom = Math.max(2, Math.round(S.maskH * 0.15)) + "%";
+  const vert = isSeries(); $("#vid").classList.toggle("vert", vert); $("#markBtn").hidden = vert; $("#lenOpt").hidden = !yt || vert;
+  if (vert) { mask.style.height = "28%"; mask.style.bottom = "11%"; }
+  else { mask.style.height = S.maskH + "%"; mask.style.bottom = Math.max(2, Math.round(S.maskH * 0.15)) + "%"; }
   $("#maskBtn").classList.toggle("on", S.mask); $("#maskBtn").setAttribute("aria-pressed", String(S.mask));
   $("#maskAdj").hidden = !S.mask;
   renderEngineTag(); renderLine();
@@ -1144,6 +1178,15 @@ function renderEngineTag() {
   else t.textContent = "";
 }
 function renderLine() {
+  if (isSeries()) {
+    const it = curShort(), done = ytDone().includes(it.vid), cuts = (S.scene.cuts || {})[it.vid];
+    el.stage.classList.toggle("nopy", true);
+    el.lineNo.textContent = "쇼츠 " + (S.scene.cur + 1) + " / " + S.scene.list.length + " · LESSON " + it.ls;
+    el.who.hidden = true; el.zh.innerHTML = ""; el.ko.hidden = true; el.reveal.hidden = true; el.empty.hidden = false;
+    el.empty.textContent = MODES[S.dmode].hide ? "자막을 가렸어요. 소리에만 집중하세요." : "「" + it.ko + "」 · 병음은 영상 자막에 있어요." + (cuts ? "" : " 1단계에서 문장이 끝날 때마다 노란 버튼을 탭하면 문장 단위로 끊어 줘요.");
+    el.seal.hidden = !done; $("#okBtn").setAttribute("aria-pressed", String(done));
+    $("#editor").hidden = true; $("#pickChip").hidden = true; renderCompare(); return;
+  }
   if (isYT()) {
     const { s, e } = ytRange(), done = ytDone().includes(s);
     el.stage.classList.toggle("nopy", true);
@@ -1215,6 +1258,12 @@ function rowHTML(it, i) {
     `<span class="mt"><span class="reps">${p.r ? "×" + p.r : ""}</span>${p.ok ? '<span class="seal-xs">熟</span>' : ""}</span></button></li>`;
 }
 function renderList() {
+  if (isSeries()) {
+    const sc = S.scene, d = ytDone();
+    $("#listTitle").textContent = "쇼츠 목록"; $("#listCnt").textContent = "熟 " + d.length + "/" + sc.list.length;
+    el.lines.innerHTML = sc.list.map((x, i) => `<li><button type="button" class="ln${i === sc.cur ? " cur" : ""}" data-sh="${i}"><span class="no">${x.ls}</span><span class="tx"><span class="ko" style="color:var(--ink);font-size:14px">${esc(x.ko)}</span><span class="dim">${x.len}초</span></span><span class="mt">${d.includes(x.vid) ? '<span class="seal-xs">熟</span>' : ""}</span></button></li>`).join("");
+    $("#listEmpty").hidden = true; renderTopPg(); return;
+  }
   if (isYT()) {
     const { s } = ytRange(), d = ytDone().slice().sort((a, b) => a - b), len = S.scene.len;
     $("#listTitle").textContent = "이 회차 장면"; $("#listCnt").textContent = "완료 " + d.length;
@@ -1323,10 +1372,12 @@ function renderScenes() {
   $("#lvRow").innerHTML = LEVELS.map(l => `<button type="button" data-lv="${l.lv}" aria-pressed="${l.lv === S.level}"><b>${l.name}</b><small>${l.sub}</small></button>`).join("");
   const d = todayDeck(), ok = okCount(d), lvl = LEVELS.find(l => l.lv === S.level);
   const dramaHint = DRAMAS.filter(x => x.hsk === S.level).map(x => x.zh).join(" · ");
-  $("#todayCard").innerHTML = `<span class="k">오늘의 5분 · ${lvl.name} · ${esc(d.tag)}</span><span class="t" lang="zh-CN">${esc(d.title)}</span><span class="s">${esc(d.sub)} · ${d.lines.length}문장 · 熟 ${ok}/${d.lines.length}</span>` +
-    `<span class="dots">${d.lines.map((_, i) => `<i class="${i < ok ? "on" : ""}"></i>`).join("")}</span>` +
-    `<button class="go" type="button" id="todayGo">▶ 시작 (약 ${Math.max(3, Math.round(d.lines.length * 0.6))}분)</button>` +
-    `<span class="alt"><button type="button" id="todayDrama">${dramaHint ? "이 레벨 드라마: " + esc(dramaHint) : "드라마로 연습하기"}</button></span>`;
+  const ss = S.mine.find(x => x.id === SHORTS_ID), sd = ss ? (ss.done || []) : [];
+  const nx = SHORTS.findIndex(x => !sd.includes(x.vid)), first = SHORTS[nx < 0 ? 0 : nx];
+  $("#todayCard").innerHTML = `<span class="k">오늘의 드라마 · HSK 3 쇼츠 · 실제 배우 + 병음 자막</span><span class="t">${esc(first.ko)}</span><span class="s">LESSON ${first.ls}부터 5편 · 熟 ${sd.length}/${SHORTS.length}</span>` +
+    `<span class="dots">${SHORTS.map(x => `<i class="${sd.includes(x.vid) ? "on" : ""}"></i>`).join("")}</span>` +
+    `<button class="go" type="button" id="todayGo">▶ 시작 (약 7분)</button>` +
+    `<span class="alt"><button type="button" id="todayText">병음 대본으로 연습: ${esc(d.title)}</button></span>`;
   $("#lvTitle").textContent = lvl.name + " 전체 대본 (" + SAMPLES.filter(x => x.lv === S.level).length + "개)";
   $("#vocabTitle").textContent = "단어장 (" + VOCAB.length + ")";
   $("#vocabList").innerHTML = VOCAB.map((v, i) => `<li><div class="deckrow" style="cursor:default"><span class="dt" lang="zh-CN">${esc(v.w)} <small style="font-family:var(--f-ui);font-size:13px;color:var(--accent)">${esc(v.py)}</small></span><span class="ds" lang="zh-CN">${esc(v.ex)}${v.ko ? " · " + esc(v.ko) : ""}</span><span class="dm"><button class="mini" type="button" data-say="${i}">듣기</button><button class="mini" type="button" data-del="${i}">삭제</button></span></div></li>`).join("");
@@ -1339,7 +1390,14 @@ function renderScenes() {
   $("#myList").innerHTML = mine.map(deckRow).join(""); $("#myEmpty").hidden = !!mine.length;
   renderVoiceSel();
 }
+let shortsBudget = 0;
 function startToday() {
+  TTS.unlock(); ensureMic();
+  S.mode = 0; S.auto = true; if (S.speed > 1) S.speed = 1;
+  openShorts(true); renderOpts(); savePrefs();
+  play();
+}
+function startTextToday() {
   TTS.unlock(); ensureMic();
   const d = todayDeck(), lvl = LEVELS.find(l => l.lv === S.level);
   S.mode = 0; S.speed = lvl.speed; S.auto = true;
@@ -1433,7 +1491,12 @@ async function backupLoad(f) {
 
 /* ================= dramas ================= */
 function renderDramas() {
-  $("#dramaList").innerHTML = DRAMAS.map(d =>
+  const ss = S.mine.find(x => x.id === SHORTS_ID), sd = ss ? (ss.done || []) : [];
+  $("#dramaList").innerHTML = `<article class="drama" style="border-color:var(--accent)"><div class="drama-h"><span class="zh">HSK 3 드라마 쇼츠</span><span class="en">Stories in Chinese Podcast</span></div>` +
+    `<div class="facts"><span class="lv">HSK 3 · 내 레벨</span><span>실제 배우</span><span>한자 + 병음 + 영어 자막</span><span>10~23초 × ${SHORTS.length}편</span></div>` +
+    `<p>HSK 3 교재 과별로 만든 짧은 드라마 장면입니다. 병음이 영상 자막에 이미 들어 있어서 아무것도 입력할 필요가 없습니다. <b>드라마로 시작한다면 이것부터.</b></p>` +
+    `<div class="row"><button class="btn primary" type="button" id="openShorts">▶ 쇼츠로 연습 (熟 ${sd.length}/${SHORTS.length})</button></div></article>` +
+    `<p class="help" style="margin:4px 2px">아래 드라마 전체 회차는 병음 자막이 없어서 귀 훈련용입니다. HSK 3 수준에서는 쇼츠를 먼저 끝내세요.</p>` + DRAMAS.map(d =>
     `<article class="drama"><div class="drama-h"><span class="zh" lang="zh-CN">${esc(d.zh)}</span><span class="en">${esc(d.en)}</span></div>` +
     `<div class="facts"><span class="lv">${esc(d.lv)}${d.hsk === S.level ? " · 내 레벨" : ""}</span><span>${esc(d.genre)}</span><span>${esc(d.where)}</span></div>` +
     `<p>${esc(d.why)}</p><p class="tip">장면 팁 · ${esc(d.tip)}</p>` +
@@ -1460,7 +1523,7 @@ $("#playBtn").onclick = togglePlay;
 $("#prevBtn").onclick = () => go(-1);
 $("#nextBtn").onclick = () => go(1);
 $("#okBtn").onclick = () => {
-  if (isYT()) { const { s } = ytRange(), d = ytDone(), i = d.indexOf(s); if (i < 0) d.push(s); else d.splice(i, 1); saveMine(); renderLine(); renderList(); return; }
+  if (isYT()) { const s = sceneKey(), d = ytDone(), i = d.indexOf(s); if (i < 0) d.push(s); else d.splice(i, 1); saveMine(); renderLine(); renderList(); return; }
   const it = cur(); if (!it) return;
   const p = (PROG[it.id] ||= { r: 0, ok: false }); p.ok = !p.ok; saveProg(); updateRow(it); renderLine();
   if (p.ok) { el.seal.classList.remove("stamp"); void el.seal.offsetWidth; el.seal.classList.add("stamp"); }
@@ -1478,7 +1541,7 @@ $("#skipT").onchange = e => { S.skipOk = e.target.checked; savePrefs(); };
 $("#pyT").onchange = e => { S.showPy = e.target.checked; renderLine(); };
 $("#koT").onchange = e => { S.showKo = e.target.checked; renderLine(); };
 $("#revealBtn").onclick = () => { S.reveal = true; renderLine(); };
-el.lines.onclick = e => { TTS.unlock(); const b = e.target.closest(".ln"); if (!b) return; if (b.dataset.t != null) { stop(); setRange(+b.dataset.t); return; } const i = +b.dataset.i; if (S.playing || i === S.idx) play(i); else setIdx(i); };
+el.lines.onclick = e => { TTS.unlock(); const b = e.target.closest(".ln"); if (!b) return; if (b.dataset.sh != null) { stop(); setShort(+b.dataset.sh); return; } if (b.dataset.t != null) { stop(); setRange(+b.dataset.t); return; } const i = +b.dataset.i; if (S.playing || i === S.idx) play(i); else setIdx(i); };
 $("#markBtn").onclick = () => { if (!ytReady) return toast("영상이 아직 준비되지 않았어요."); const t = ytNow(); stop(); setRange(Math.max(0, t - 1)); toast(fmtT(S.scene.s0) + "부터 " + (S.scene.len >= 60 ? S.scene.len / 60 + "분" : S.scene.len + "초") + " 연습합니다. ▶를 누르세요."); };
 $("#cutBtn").onclick = () => { if (!cutting) return; const t = ytNow() - 0.15; const last = cutting.t[cutting.t.length - 1]; if (last != null && t - last < 0.7) return; cutting.t.push(t); $("#cutN").textContent = cutting.t.length; };
 $("#justBtn").onclick = () => { if (!ytReady) return; try { YTP.seekTo(Math.max(0, ytNow() - 3), true); } catch {} };
@@ -1523,6 +1586,7 @@ $("#vScenes").addEventListener("click", e => {
   const lv = e.target.closest("[data-lv]"); if (lv) { S.level = +lv.dataset.lv; savePrefs(); renderScenes(); return; }
   if (e.target.closest("#todayGo")) return startToday();
   if (e.target.closest("#todayDrama")) return switchView("vDramas");
+  if (e.target.closest("#todayText")) return startTextToday();
   if (e.target.closest("#bkQuick")) return backupSave();
   const sy = e.target.closest("[data-say]"); if (sy) { TTS.unlock(); TTS.speak(VOCAB[+sy.dataset.say].w, 0.75); return; }
   const dl = e.target.closest("[data-del]"); if (dl) { VOCAB.splice(+dl.dataset.del, 1); saveVocab(); renderScenes(); return; }
@@ -1537,7 +1601,7 @@ function openEpisode(vid, dz, ep, ch) {
   switchView("vPractice"); selectScene(sc.id); renderDramas();
   if (!(sc.done || []).length) toast("대화가 시작되는 곳에서 '여기서부터 연습'을 누르고 ▶.");
 }
-$("#dramaList").onclick = e => { const p = e.target.closest("[data-ep]"); if (p) return openEpisode(p.dataset.ep, p.dataset.d, p.dataset.epn, p.dataset.ch); const b = e.target.closest("[data-add]"); if (!b) return; switchView("vScenes"); const dt = $("#ytUrl").closest("details"); if (dt) dt.open = true; $("#ytTitle").value = b.dataset.add + " "; $("#ytUrl").focus(); };
+$("#dramaList").onclick = e => { if (e.target.closest("#openShorts")) { TTS.unlock(); return openShorts(true); } const p = e.target.closest("[data-ep]"); if (p) return openEpisode(p.dataset.ep, p.dataset.d, p.dataset.epn, p.dataset.ch); const b = e.target.closest("[data-add]"); if (!b) return; switchView("vScenes"); const dt = $("#ytUrl").closest("details"); if (dt) dt.open = true; $("#ytTitle").value = b.dataset.add + " "; $("#ytUrl").focus(); };
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => { if (S.playing && b.dataset.v !== "vPractice") stop(); switchView(b.dataset.v); });
 document.addEventListener("keydown", e => {
   if (e.target.closest("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey || S.view !== "vPractice") return;
