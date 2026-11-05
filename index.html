@@ -82,15 +82,32 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .stage.tts .sub{min-height:200px}
 .who{font-family:var(--f-zh);font-size:12.5px;color:var(--screen-muted);border:1px solid var(--screen-line);border-radius:999px;padding:0 12px}
 .zhline{font-family:var(--f-zh);font-weight:500;font-size:clamp(24px,6.4vw,36px);line-height:1.25;margin:0;text-wrap:balance}
-.zhline ruby{ruby-position:over;margin:0 .015em}
-.zhline rt{font-family:var(--f-ui);font-weight:500;font-size:max(11px,.38em);padding-bottom:.1em}
+.zhline{font-size:calc(clamp(24px,6.4vw,36px) * var(--zh-scale,1))}
+.zhline ruby{display:inline-block;position:relative;width:1.04em;text-align:center;padding-top:.62em;line-height:1.15;cursor:pointer;border-radius:4px}
+.zhline rt{position:absolute;left:50%;top:0;transform:translateX(-50%);font-family:var(--f-ui);font-weight:500;font-size:max(10px,.34em);letter-spacing:-.02em;white-space:nowrap;line-height:1.2}
+.stage.nopy .zhline ruby{padding-top:0}
+.zhline rt.lg{font-size:max(9px,.29em);letter-spacing:-.04em}
+.zhline ruby.sel{background:rgba(243,185,87,.22)}
+.pickchip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--screen-muted)}
+.pickchip b{font-family:var(--f-zh);font-size:18px;color:var(--screen-ink)}
+.pickchip button{border:1px solid var(--s2);color:var(--s2);background:transparent;border-radius:999px;padding:6px 12px;min-height:36px;font-size:13px}
+.pickchip .help{width:100%;text-align:center;color:var(--screen-muted)}
+.okask{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--screen-ink)}
+.okask button{border:1px solid var(--screen-line);background:var(--screen-2);color:var(--screen-ink);border-radius:999px;padding:8px 16px;min-height:44px;font-size:14px}
+.okask button.y{border-color:var(--seal);background:var(--seal);color:var(--seal-ink)}
+.steps{display:inline-flex;gap:4px;align-items:center}
+.steps i{width:14px;height:4px;border-radius:2px;background:var(--screen-line)}
+.steps i.on{background:var(--s2)}
+.steps i.done{background:var(--screen-muted)}
+.cmprow{display:flex;gap:8px;flex-wrap:wrap}
+.cmprow .pill{flex:1 1 auto;justify-content:center}
 .zhline .t1 rt{color:var(--s1)} .zhline .t2 rt{color:var(--s2)} .zhline .t3 rt{color:var(--s3)} .zhline .t4 rt{color:var(--s4)} .zhline .t0 rt{color:var(--s0)}
 .stage.nopy rt{display:none}
 .zhline .pz{color:var(--screen-muted)}
 .redact{display:inline-flex;gap:.18em;flex-wrap:wrap;justify-content:center}
 .redact i{display:inline-block;height:.9em;border-radius:3px;background:var(--screen-line);vertical-align:middle}
-.koline{margin:0;color:var(--screen-muted);font-size:15.5px;text-wrap:pretty}
-.empty-sub{margin:0;color:var(--screen-muted);font-size:13.5px;max-width:30em}
+.koline{margin:0;color:#C6CFCB;font-size:calc(15.5px * var(--zh-scale,1));text-wrap:pretty}
+.empty-sub{margin:0;color:#B9C3BF;font-size:13.5px;max-width:30em}
 .reveal{border:1px solid var(--screen-line);background:var(--screen-2);color:var(--screen-ink);border-radius:999px;padding:5px 14px;font-size:13px}
 .stage-seal{position:absolute;top:38px;right:clamp(16px,4vw,28px);width:40px;height:40px;border-radius:6px;background:var(--seal);color:var(--seal-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:26px;line-height:1;transform:rotate(-7deg);box-shadow:inset 0 0 0 3px var(--seal),inset 0 0 0 4px rgba(255,255,255,.55)}
 .stage-seal.stamp{animation:stamp .32s cubic-bezier(.2,1.4,.4,1)}
@@ -224,7 +241,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 }
 
 /* v2 additions */
-.modes5{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:6px}
+.modes5{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .modes5 button{width:100%;height:100%;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
 .modes5 .n{font-family:var(--f-mono);font-size:10.5px;color:var(--muted)}
 .modes5 b{font-weight:600;font-size:13px;line-height:1.25}
@@ -248,7 +265,48 @@ details.panel[open]>summary::after{content:"－"}
 .nowbtn{border:1px solid var(--accent);color:var(--accent);background:var(--raised);border-radius:7px;padding:4px 8px;font-size:12px}
 .deckbar{height:3px;border-radius:2px;background:var(--line);overflow:hidden;grid-column:1 / -1;margin-top:6px}
 .deckbar i{display:block;height:100%;background:var(--seal)}
-@media (max-width:520px){ .modes5{grid-template-columns:repeat(4,1fr)} .modes5 li:first-child{grid-column:1 / -1} }
+
+
+/* v3: home, levels, adaptive layout (compact width = outer display, regular width = inner display) */
+.lvrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lvrow button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:left;min-height:56px}
+.lvrow b{font-family:var(--f-mono);font-size:15px}
+.lvrow small{font-size:12px;color:var(--muted)}
+.lvrow button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.lvrow button[aria-pressed="true"] small{color:var(--accent)}
+.today{background:var(--screen);color:var(--screen-ink);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.today .k{font-family:var(--f-mono);font-size:11.5px;color:var(--screen-muted);letter-spacing:.06em}
+.today .t{font-family:var(--f-display);font-size:30px;line-height:1.15}
+.today .s{color:var(--screen-muted);font-size:14px}
+.today .go{align-self:stretch;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-size:17px;font-weight:600;padding:15px;min-height:52px}
+.today .alt{display:flex;gap:8px;flex-wrap:wrap}
+.today .alt button{border:1px solid var(--screen-line);background:transparent;color:var(--screen-ink);border-radius:999px;padding:7px 13px;font-size:13px}
+.today .dots{display:flex;gap:4px}
+.today .dots i{width:16px;height:4px;border-radius:2px;background:var(--screen-line)}
+.today .dots i.on{background:var(--seal)}
+.pcols{display:flex;flex-direction:column;gap:14px}
+.pmain,.pside{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ib,.pill,.btn,.chips button,.nb,.nowbtn,.sbtn{min-height:44px}
+.chips button{min-width:44px}
+.nb,.nowbtn{min-width:44px}
+@media (min-width:760px){
+  :root{--side-w:92px}
+  .nav{top:0;bottom:0;right:auto;width:calc(var(--side-w) + env(safe-area-inset-left,0px));border-top:0;border-right:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+  .nav-in{height:auto;grid-template-columns:1fr;grid-auto-rows:76px;padding-top:12px;max-width:none}
+  .wrap{max-width:1240px;padding-left:calc(var(--side-w) + max(24px,env(safe-area-inset-left,0px)));padding-right:max(24px,env(safe-area-inset-right,0px));padding-bottom:calc(env(safe-area-inset-bottom,0px) + 32px)}
+  .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 20px)}
+  /* two columns; the wide center gutter keeps controls off the fold of the inner display */
+  .pcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:56px;align-items:start}
+  .pside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - env(safe-area-inset-top,0px) - 24px);overflow:auto}
+  #vScenes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:56px;align-items:start}
+  #vScenes[hidden]{display:none!important}
+  #vScenes>*{grid-column:1}
+  #vScenes>#homeLists{grid-column:2;grid-row:1 / span 6}
+  #dramaList{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:56px}
+}
+.cutbtn{border:1px dashed var(--s2);background:transparent;color:var(--s2);border-radius:12px;min-height:56px;font-size:14px;font-weight:600}
+.cutbtn b{font-family:var(--f-mono);margin-left:6px}
+.cutbtn:active{background:rgba(243,185,87,.15)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.28.1/dist/index.js"></script>
 </head>
@@ -260,18 +318,11 @@ details.panel[open]>summary::after{content:"－"}
   </header>
 
   <!-- ============ 연습 ============ -->
-  <section class="view" id="vPractice">
-    <div class="panel sec addcard" id="startCard" hidden>
-      <h2>드라마 장면 만들기</h2>
-      <p class="help">가장 쉬운 방법: 아래 <b>추천 드라마에서 고르기</b> → 회차 버튼 한 번. 다른 유튜브 영상은 링크를 붙여 넣으세요.</p>
-      <div class="inrow"><input type="url" id="qUrl" class="field" placeholder="유튜브 링크" autocomplete="off" inputmode="url" style="border:1px solid var(--line);border-radius:8px;background:var(--raised);padding:9px 11px;font-size:16px"><button class="btn" type="button" id="qPaste">붙여넣기</button></div>
-      <div class="row"><button class="btn" type="button" id="qAdd">링크로 만들기</button><button class="btn primary" type="button" id="qDramas">추천 드라마에서 고르기</button></div>
-      <p class="err" id="qErr" hidden></p>
-    </div>
-
+  <section class="view" id="vPractice" hidden>
     <div class="scene-h"><span class="k" id="sceneK"></span><span class="t" id="sceneT"></span><span class="s" id="sceneS"></span>
       <span class="scene-tools" id="sceneTools" hidden><button class="mini" type="button" id="renBtn">이름</button><button class="mini" type="button" id="delSceneBtn">삭제</button></span></div>
 
+    <div class="pcols"><div class="pmain">
     <div class="stage" id="stage">
       <div class="vid" id="vid" hidden>
         <div id="yt"></div>
@@ -279,21 +330,24 @@ details.panel[open]>summary::after{content:"－"}
         <div class="mask" id="mask" hidden>자막 가림</div>
       </div>
       <div class="mark" id="mark" hidden>
-        <button class="sbtn markbig" type="button" id="markBtn">● 구간 시작</button>
-        <button class="sbtn" type="button" id="justBtn">방금 들은 줄</button>
+        <button class="sbtn markbig" type="button" id="markBtn">여기서부터 연습</button>
+        <button class="sbtn" type="button" id="justBtn" aria-label="3초 뒤로">⟲ 3초</button>
         <span class="now" id="nowT">0:00.0</span>
         <button class="sbtn small" type="button" id="maskBtn" aria-pressed="false">가리개</button>
         <span class="maskadj" id="maskAdj" hidden><button class="sbtn small" type="button" id="maskDown" aria-label="가리개 낮게">▼</button><button class="sbtn small" type="button" id="maskUp" aria-label="가리개 높게">▲</button></span>
       </div>
       <div class="screen">
-        <div class="screen-meta"><span id="lineNo"></span><span id="engineTag"></span></div>
+        <div class="screen-meta"><span id="lineNo"></span><span class="steps" id="steps" hidden></span><span id="engineTag"></span></div>
         <div class="sub">
           <span class="who" id="who" lang="zh-CN" hidden></span>
           <p class="zhline" id="zhline" lang="zh-CN"></p>
           <p class="koline" id="koline"></p>
           <p class="empty-sub" id="emptySub" hidden></p>
           <button class="reveal" id="revealBtn" type="button" hidden>자막 보기</button>
+          <div class="pickchip" id="pickChip" hidden></div>
         </div>
+        <div class="okask" id="okAsk" hidden>입에 붙었나요? <button type="button" class="y" id="askYes">예, 熟</button><button type="button" id="askNo">아직</button></div>
+        <button class="cutbtn" type="button" id="cutBtn" hidden>문장이 끝날 때마다 여기를 탭 <b id="cutN">0</b></button>
         <div class="stage-seal" id="stageSeal" hidden>熟</div>
         <div class="phase" id="phase" data-p="idle"><span class="phase-l" id="phaseL"></span><div class="bar" id="bar"><i id="barI"></i></div></div>
       </div>
@@ -306,24 +360,30 @@ details.panel[open]>summary::after{content:"－"}
         <button class="ib" id="nextBtn" type="button" aria-label="다음 구간"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
         <button class="pill okbtn" id="okBtn" type="button" aria-pressed="false"><span class="seal-sm">熟</span>입에 붙음</button>
       </div>
-      <ol class="modes5" id="modes" aria-label="연습 방식">
-        <li><button type="button" class="course" data-m="0"><span class="n">AUTO</span><b>자동 코스</b></button></li>
-        <li><button type="button" data-m="1"><span class="n">1</span><b>귀로만</b></button></li>
-        <li><button type="button" data-m="2"><span class="n">2</span><b>보며 듣기</b></button></li>
-        <li><button type="button" data-m="3"><span class="n">3</span><b>따라 말하기</b></button></li>
-        <li><button type="button" data-m="4"><span class="n">4</span><b>겹쳐 말하기</b></button></li>
-      </ol>
-      <p class="mode-hint" id="modeHint" style="margin:0"></p>
+      <div class="cmprow" id="cmpRow" hidden><button class="pill" type="button" id="cmpBtn">원어민 → 내 목소리 비교</button><button class="pill" type="button" id="mineBtn">내 목소리만</button></div>
       <div class="speedrow"><span class="opt-l">속도</span><div class="chips" id="speedChips"></div></div>
     </div>
 
     <details class="panel" id="optPanel">
-      <summary>옵션</summary>
+      <summary>옵션 · 단계 직접 고르기</summary>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">      <ol class="modes5" id="modes" aria-label="연습 방식">
+        <li><button type="button" class="course" data-m="0"><span class="n">AUTO</span><b>자동 코스</b></button></li>
+        <li><button type="button" data-m="1"><span class="n">1</span><b>귀로만</b></button></li>
+        <li><button type="button" data-m="2"><span class="n">2</span><b>보며 듣기</b></button></li>
+        <li><button type="button" data-m="3"><span class="n">3</span><b>병음 보며 따라</b></button></li>
+        <li><button type="button" data-m="4"><span class="n">4</span><b>병음 보며 겹쳐</b></button></li>
+        <li><button type="button" data-m="5"><span class="n">5</span><b>안 보고 겹쳐</b></button></li>
+      </ol>
+      <p class="mode-hint" id="modeHint" style="margin:0"></p>
+</div>
       <div class="opts" style="margin-top:12px">
+        <div class="opt" id="lenOpt"><span class="opt-l">장면 길이</span><div class="chips" id="lenChips"></div></div>
         <div class="opt" id="repOpt"><span class="opt-l">구간마다</span><div class="chips" id="repChips"></div></div>
+        <div class="opt"><span class="opt-l">글자 크기</span><div class="chips" id="zsChips"></div></div>
         <div class="opt"><span class="opt-l">말하기 멈춤</span><div class="chips" id="gapChips"></div></div>
         <div class="opt toggles">
-          <label><input type="checkbox" id="autoT">자동 다음 구간</label>
+          <label><input type="checkbox" id="recT">따라 말할 때 녹음</label>
+          <label><input type="checkbox" id="autoT">자동 다음 문장</label>
           <label><input type="checkbox" id="skipT">熟 구간 건너뛰기</label>
           <label><input type="checkbox" id="pyT">병음</label>
           <label><input type="checkbox" id="koT">뜻</label>
@@ -343,31 +403,38 @@ details.panel[open]>summary::after{content:"－"}
       <div class="row"><button class="pill danger" type="button" id="delClip">이 구간 삭제</button></div>
     </details>
 
+    </div><div class="pside">
     <div class="sec">
       <div class="sec-h"><h2 id="listTitle">대본</h2><span class="cnt" id="listCnt"></span></div>
       <ol class="lines" id="lines"></ol>
-      <p class="help" id="listEmpty" hidden>영상을 보다가 따라 하고 싶은 대사가 시작되면 <b>● 구간 시작</b>, 끝나면 <b>■ 구간 끝</b>. 이미 지나갔으면 <b>방금 들은 줄</b>(직전 3.5초).</p>
+      <p class="help" id="listEmpty" hidden></p>
       <p class="legend">성조 <span class="c1">1성</span><span class="c2">2성</span><span class="c3">3성</span><span class="c4">4성</span><span class="c0">경성</span></p>
     </div>
+    </div></div>
   </section>
 
   <!-- ============ 장면 ============ -->
   <section class="view" id="vScenes" hidden>
-    <div class="panel sec">
-      <h2>유튜브 장면 추가</h2>
+    <div class="sec">
+      <p class="grp" style="margin:0">내 레벨</p>
+      <div class="lvrow" id="lvRow"></div>
+    </div>
+    <div class="today" id="todayCard"></div>
+    <div class="sec" id="homeLists">
+      <p class="note" id="bkNote" hidden></p>
+      <details class="panel sec" id="deckBox"><summary id="lvTitle">HSK 3 전체 대본</summary><ul class="decklist" id="sampleList"></ul></details>
+      <details class="panel sec" id="vocabBox"><summary id="vocabTitle">단어장</summary><ul class="decklist" id="vocabList"></ul><p class="help" id="vocabEmpty">연습 화면에서 한자를 누르면 단어를 모을 수 있어요. 두 글자 이상은 옆 글자를 이어서 누르세요.</p></details>
+      <p class="grp">내 드라마 장면</p>
+      <ul class="decklist" id="myList"></ul>
+      <p class="help" id="myEmpty">아직 없어요. 드라마 탭에서 회차 버튼을 누르면 생깁니다.</p>
+    </div>
+    <details class="panel sec">
+      <summary>유튜브 링크로 장면 추가</summary>
       <div class="inrow"><input type="url" id="ytUrl" placeholder="https://youtu.be/…" autocomplete="off" inputmode="url" style="border:1px solid var(--line);border-radius:8px;background:var(--raised);padding:9px 11px;font-size:16px"><button class="btn" type="button" id="ytPaste">붙여넣기</button></div>
       <label class="field"><span>장면 이름 (비우면 영상 제목)</span><input type="text" id="ytTitle" placeholder="예: 家有儿女 1화 저녁 식탁" autocomplete="off"></label>
       <div class="row"><button class="btn primary" type="button" id="ytAdd">장면 만들기</button></div>
       <p class="err" id="ytErr" hidden></p>
-    </div>
-
-    <div class="sec">
-      <p class="grp">내 장면</p>
-      <ul class="decklist" id="myList"></ul>
-      <p class="help" id="myEmpty">아직 없어요. 추천 드라마 탭에서 영상을 찾아 링크를 넣으세요.</p>
-      <p class="grp">기본 대본 · 음성 합성</p>
-      <ul class="decklist" id="sampleList"></ul>
-    </div>
+    </details>
 
     <details class="panel sec">
       <summary>대사 붙여넣기 장면 (음성 합성)</summary>
@@ -412,9 +479,9 @@ details.panel[open]>summary::after{content:"－"}
 
 <nav class="nav" aria-label="메뉴">
   <div class="nav-in">
-    <button type="button" data-v="vPractice" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l4 2-4 2z" fill="currentColor"/><path d="M8 21h8"/></svg>연습</button>
-    <button type="button" data-v="vScenes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>장면</button>
-    <button type="button" data-v="vDramas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>추천 드라마</button>
+    <button type="button" data-v="vScenes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg>오늘</button>
+    <button type="button" data-v="vPractice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l4 2-4 2z" fill="currentColor"/><path d="M8 21h8"/></svg>연습</button>
+    <button type="button" data-v="vDramas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>드라마</button>
   </div>
 </nav>
 <div class="toast" id="toast" hidden role="status"></div>
@@ -422,65 +489,181 @@ details.panel[open]>summary::after{content:"－"}
 <script>
 (() => {
 "use strict";
+const LEVELS = [
+  { lv: 2, name: "HSK 2", sub: "입문", speed: 0.75 },
+  { lv: 3, name: "HSK 3", sub: "지금 내 수준", speed: 0.75 },
+  { lv: 4, name: "HSK 4", sub: "도전", speed: 1 }
+];
+const L = (sp, zh, ko) => ({ sp, zh, ko });
 const SAMPLES = [
-  { id: "s-reunion", title: "好久不见", sub: "오랜만이야 · 심야 편의점", lines: [
-    { sp: "陈默", zh: "林夏？真的是你？", ko: "린샤? 정말 너야?" },
-    { sp: "林夏", zh: "陈默……好久不见。", ko: "천모… 오랜만이야." },
-    { sp: "陈默", zh: "你什么时候回来的？怎么也不跟我说一声？", ko: "언제 돌아왔어? 왜 나한테 말 한마디 없었어?" },
-    { sp: "林夏", zh: "上个月刚回来，一直挺忙的。", ko: "지난달에 막 왔어. 계속 좀 바빴어." },
-    { sp: "陈默", zh: "这么晚了，你一个人在这儿干嘛呢？", ko: "이 늦은 시간에 혼자 여기서 뭐 해?" },
-    { sp: "林夏", zh: "睡不着，出来买点儿东西。", ko: "잠이 안 와서 뭐 좀 사러 나왔어." },
-    { sp: "陈默", zh: "那……要不要一起喝一杯？", ko: "그럼… 같이 한잔할래?" },
-    { sp: "林夏", zh: "改天吧，今天太晚了。", ko: "다음에 하자. 오늘은 너무 늦었어." },
-    { sp: "陈默", zh: "你还是老样子，总是拒绝我。", ko: "넌 여전하네. 늘 날 거절하고." },
-    { sp: "林夏", zh: "陈默，我们都不是以前的我们了。", ko: "천모, 우린 이제 예전의 우리가 아니야." }
+  { id: "h2-intro", lv: 2, title: "认识你", sub: "처음 만난 사람과 인사", tag: "일상", lines: [
+    L("A", "你好！我叫金美，你叫什么名字？", "안녕! 나는 김미야, 너는 이름이 뭐야?"),
+    L("B", "我叫王小明。你是哪国人？", "나는 왕샤오밍이야. 너는 어느 나라 사람이야?"),
+    L("A", "我是韩国人，现在住在新加坡。", "나는 한국 사람이고, 지금 싱가포르에 살아."),
+    L("B", "你的中文说得很好！", "너 중국어 잘한다!"),
+    L("A", "谢谢，我还在学习呢。", "고마워, 아직 배우는 중이야."),
+    L("B", "你学了多长时间了？", "얼마나 배웠어?"),
+    L("A", "半年了，每天学一点儿。", "반년 됐어, 매일 조금씩 배워."),
+    L("B", "很好！以后我们可以一起练习。", "좋다! 앞으로 같이 연습하자.")
   ]},
-  { id: "s-hotpot", title: "火锅店", sub: "훠궈집 · 주문하기", lines: [
-    { sp: "服务员", zh: "欢迎光临！几位？", ko: "어서 오세요! 몇 분이세요?" },
-    { sp: "客人", zh: "两位。有靠窗的位置吗？", ko: "두 명이요. 창가 자리 있어요?" },
-    { sp: "服务员", zh: "有的，这边请。锅底要什么？", ko: "있어요, 이쪽으로 오세요. 육수는 뭘로 하시겠어요?" },
-    { sp: "客人", zh: "鸳鸯锅吧，我朋友不太能吃辣。", ko: "반반 냄비로 할게요. 친구가 매운 걸 잘 못 먹어서요." },
-    { sp: "服务员", zh: "好嘞。红锅要微辣、中辣还是特辣？", ko: "알겠습니다. 빨간 탕은 덜 맵게, 보통, 아주 맵게 중 어떤 걸로 할까요?" },
-    { sp: "客人", zh: "微辣就行。毛肚和鸭肠先各来一份。", ko: "덜 맵게면 돼요. 마오두(소 양)랑 오리 창자 먼저 하나씩 주세요." },
-    { sp: "服务员", zh: "毛肚七上八下，烫十几秒就能吃了。", ko: "마오두는 일곱 번 담갔다 여덟 번 건지듯, 10여 초만 데치면 드실 수 있어요." },
-    { sp: "客人", zh: "好的，谢谢。再来两瓶冰啤酒。", ko: "네, 감사합니다. 차가운 맥주도 두 병 주세요." },
-    { sp: "服务员", zh: "没问题，马上就来！", ko: "네, 바로 갖다드릴게요!" }
+  { id: "h2-time", lv: 2, title: "几点见？", sub: "약속 잡기", tag: "일상", lines: [
+    L("A", "明天你有时间吗？", "내일 시간 있어?"),
+    L("B", "有啊，下午我没有课。", "있어, 오후에 수업 없어."),
+    L("A", "我们一起去看电影吧。", "같이 영화 보러 가자."),
+    L("B", "好啊！几点见？", "좋아! 몇 시에 볼까?"),
+    L("A", "两点半怎么样？", "두 시 반 어때?"),
+    L("B", "可以。在哪儿见面？", "좋아. 어디서 만나?"),
+    L("A", "在电影院门口见。", "영화관 입구에서 보자."),
+    L("B", "好，明天见！", "그래, 내일 봐!")
   ]},
-  { id: "s-taxi", title: "打车去机场", sub: "택시로 공항 가기", lines: [
-    { sp: "司机", zh: "您好，去哪儿？", ko: "안녕하세요, 어디로 가세요?" },
-    { sp: "乘客", zh: "师傅，去白云机场，二号航站楼。", ko: "기사님, 바이윈 공항 2터미널이요." },
-    { sp: "司机", zh: "好嘞。赶时间吗？", ko: "네~ 시간 급하세요?" },
-    { sp: "乘客", zh: "有点儿急，我的航班是四点的。", ko: "좀 급해요. 비행기가 4시라서요." },
-    { sp: "司机", zh: "现在路上有点儿堵，我走高速吧，大概四十分钟。", ko: "지금 길이 좀 막히네요. 고속도로로 갈게요, 40분쯤 걸려요." },
-    { sp: "乘客", zh: "行，麻烦您开快一点儿。", ko: "네, 죄송하지만 좀 빨리 가 주세요." },
-    { sp: "司机", zh: "放心吧，误不了。", ko: "걱정 마세요, 안 늦어요." },
-    { sp: "乘客", zh: "到了！可以扫码付款吗？", ko: "도착했네요! QR코드로 결제돼요?" },
-    { sp: "司机", zh: "可以，扫这个就行。慢走啊！", ko: "네, 이거 찍으시면 돼요. 조심히 가세요!" }
+  { id: "h2-fruit", lv: 2, title: "买水果", sub: "과일 가게", tag: "쇼핑", lines: [
+    L("顾客", "你好，苹果怎么卖？", "안녕하세요, 사과 어떻게 팔아요?"),
+    L("老板", "五块钱一斤。", "한 근에 5위안이에요."),
+    L("顾客", "我要两斤。", "두 근 주세요."),
+    L("老板", "还要别的吗？", "다른 거 더 필요하세요?"),
+    L("顾客", "这个西瓜甜不甜？", "이 수박 달아요?"),
+    L("老板", "很甜，你尝尝。", "엄청 달아요, 맛보세요."),
+    L("顾客", "好，也要一个。一共多少钱？", "좋아요, 이것도 하나요. 전부 얼마예요?"),
+    L("老板", "一共二十五块。", "전부 25위안이에요.")
   ]},
-  { id: "s-bargain", title: "讨价还价", sub: "흥정하기 · 옷가게", lines: [
-    { sp: "顾客", zh: "老板，这件多少钱？", ko: "사장님, 이거 얼마예요?" },
-    { sp: "老板", zh: "一百八。纯棉的，质量特别好。", ko: "180위안이요. 순면이라 품질 엄청 좋아요." },
-    { sp: "顾客", zh: "太贵了吧！便宜点儿呗。", ko: "너무 비싸요! 좀 깎아 주세요." },
-    { sp: "老板", zh: "那你说多少？", ko: "그럼 얼마면 되겠어요?" },
-    { sp: "顾客", zh: "一百，行的话我买两件。", ko: "100위안이요. 되면 두 벌 살게요." },
-    { sp: "老板", zh: "一百太低了，最少一百五。", ko: "100은 너무 낮아요. 최소 150은 받아야 돼요." },
-    { sp: "顾客", zh: "那我再去别家看看吧。", ko: "그럼 다른 가게 좀 보고 올게요." },
-    { sp: "老板", zh: "哎，别走别走！一百二，两件给你二百四。", ko: "아이고, 가지 마세요! 120에, 두 벌이면 240에 드릴게요." },
-    { sp: "顾客", zh: "行，成交！", ko: "좋아요, 콜!" }
+  { id: "h3-hotel", lv: 3, title: "酒店入住", sub: "호텔 체크인", tag: "여행", lines: [
+    L("客人", "你好，我要办入住。我在网上订了房间。", "안녕하세요, 체크인하려고요. 인터넷으로 방을 예약했어요."),
+    L("前台", "好的，请给我看一下您的护照。", "네, 여권 좀 보여 주세요."),
+    L("客人", "给你。房费包括早餐吗？", "여기요. 숙박비에 조식 포함돼 있나요?"),
+    L("前台", "包括，早餐在二楼，七点到十点。", "포함이에요. 조식은 2층에서 7시부터 10시까지예요."),
+    L("客人", "房间里可以上网吗？", "방에서 인터넷 돼요?"),
+    L("前台", "可以，密码写在房卡上。", "네, 비밀번호는 카드키에 적혀 있어요."),
+    L("客人", "明天几点以前要退房？", "내일 몇 시 전까지 체크아웃해야 해요?"),
+    L("前台", "中午十二点以前。祝您住得愉快！", "낮 12시 전까지요. 즐거운 숙박 되세요!")
+  ]},
+  { id: "h3-way", lv: 3, title: "去地铁站怎么走？", sub: "길 묻기 · 지하철", tag: "여행", lines: [
+    L("A", "不好意思，请问地铁站怎么走？", "실례지만, 지하철역 어떻게 가요?"),
+    L("B", "一直往前走，到路口往右拐。", "쭉 앞으로 가다가 사거리에서 오른쪽으로 도세요."),
+    L("A", "远不远？走路要多长时间？", "멀어요? 걸어서 얼마나 걸려요?"),
+    L("B", "不太远，走路大概十分钟。", "별로 안 멀어요, 걸어서 10분쯤이요."),
+    L("A", "坐几号线可以到外滩？", "몇 호선 타면 와이탄에 갈 수 있어요?"),
+    L("B", "坐二号线，在南京东路下车。", "2호선 타고 난징둥루에서 내리세요."),
+    L("A", "要换车吗？", "갈아타야 해요?"),
+    L("B", "不用换，很方便。", "안 갈아타도 돼요, 편해요.")
+  ]},
+  { id: "s-hotpot", lv: 3, title: "火锅店", sub: "훠궈집 주문", tag: "식당", lines: [
+    L("服务员", "欢迎光临！几位？", "어서 오세요! 몇 분이세요?"),
+    L("客人", "两位。有靠窗的位置吗？", "두 명이요. 창가 자리 있어요?"),
+    L("服务员", "有的，这边请。锅底要什么？", "있어요, 이쪽으로 오세요. 육수는 뭘로 하시겠어요?"),
+    L("客人", "鸳鸯锅吧，我朋友不太能吃辣。", "반반 냄비로 할게요. 친구가 매운 걸 잘 못 먹어서요."),
+    L("服务员", "好嘞。红锅要微辣、中辣还是特辣？", "알겠습니다. 빨간 탕은 덜 맵게, 보통, 아주 맵게 중 어떤 걸로 할까요?"),
+    L("客人", "微辣就行。毛肚和鸭肠先各来一份。", "덜 맵게면 돼요. 마오두(소 양)랑 오리 창자 먼저 하나씩 주세요."),
+    L("服务员", "毛肚七上八下，烫十几秒就能吃了。", "마오두는 일곱 번 담갔다 여덟 번 건지듯, 10여 초만 데치면 드실 수 있어요."),
+    L("客人", "好的，谢谢。再来两瓶冰啤酒。", "네, 감사합니다. 차가운 맥주도 두 병 주세요."),
+    L("服务员", "没问题，马上就来！", "네, 바로 갖다드릴게요!")
+  ]},
+  { id: "s-taxi", lv: 3, title: "打车去机场", sub: "택시로 공항 가기", tag: "여행", lines: [
+    L("司机", "您好，去哪儿？", "안녕하세요, 어디로 가세요?"),
+    L("乘客", "师傅，去白云机场，二号航站楼。", "기사님, 바이윈 공항 2터미널이요."),
+    L("司机", "好嘞。赶时间吗？", "네~ 시간 급하세요?"),
+    L("乘客", "有点儿急，我的航班是四点的。", "좀 급해요. 비행기가 4시라서요."),
+    L("司机", "现在路上有点儿堵，我走高速吧，大概四十分钟。", "지금 길이 좀 막히네요. 고속도로로 갈게요, 40분쯤 걸려요."),
+    L("乘客", "行，麻烦您开快一点儿。", "네, 죄송하지만 좀 빨리 가 주세요."),
+    L("司机", "放心吧，误不了。", "걱정 마세요, 안 늦어요."),
+    L("乘客", "到了！可以扫码付款吗？", "도착했네요! QR코드로 결제돼요?"),
+    L("司机", "可以，扫这个就行。慢走啊！", "네, 이거 찍으시면 돼요. 조심히 가세요!")
+  ]},
+  { id: "s-bargain", lv: 3, title: "讨价还价", sub: "옷가게 흥정", tag: "쇼핑", lines: [
+    L("顾客", "老板，这件多少钱？", "사장님, 이거 얼마예요?"),
+    L("老板", "一百八。纯棉的，质量特别好。", "180위안이요. 순면이라 품질 엄청 좋아요."),
+    L("顾客", "太贵了吧！便宜点儿呗。", "너무 비싸요! 좀 깎아 주세요."),
+    L("老板", "那你说多少？", "그럼 얼마면 되겠어요?"),
+    L("顾客", "一百，行的话我买两件。", "100위안이요. 되면 두 벌 살게요."),
+    L("老板", "一百太低了，最少一百五。", "100은 너무 낮아요. 최소 150은 받아야 돼요."),
+    L("顾客", "那我再去别家看看吧。", "그럼 다른 가게 좀 보고 올게요."),
+    L("老板", "哎，别走别走！一百二，两件给你二百四。", "아이고, 가지 마세요! 120에, 두 벌이면 240에 드릴게요."),
+    L("顾客", "行，成交！", "좋아요, 콜!")
+  ]},
+  { id: "h3-weekend", lv: 3, title: "周末干什么？", sub: "날씨 · 주말 계획", tag: "일상", lines: [
+    L("A", "这个周末你打算做什么？", "이번 주말에 뭐 할 계획이야?"),
+    L("B", "如果天气好，我想去爬山。", "날씨 좋으면 등산 가고 싶어."),
+    L("A", "天气预报说周六会下雨。", "일기예보에서 토요일에 비 온대."),
+    L("B", "是吗？那我们周日去吧。", "그래? 그럼 우리 일요일에 가자."),
+    L("A", "好啊，我也很久没运动了。", "좋아, 나도 운동 안 한 지 오래됐어."),
+    L("B", "那早上八点在我家楼下见。", "그럼 아침 8시에 우리 집 아래에서 보자."),
+    L("A", "太早了吧！九点行不行？", "너무 이르다! 9시 괜찮아?"),
+    L("B", "行，别迟到啊！", "그래, 늦지 마!")
+  ]},
+  { id: "h3-sick", lv: 3, title: "我有点儿不舒服", sub: "몸이 안 좋을 때", tag: "일상", lines: [
+    L("A", "你怎么了？脸色不太好。", "왜 그래? 안색이 안 좋아."),
+    L("B", "我头疼，可能感冒了。", "머리 아파, 감기 걸렸나 봐."),
+    L("A", "发烧吗？要不要去医院？", "열 나? 병원 갈래?"),
+    L("B", "不用，我吃点儿药就好了。", "괜찮아, 약 좀 먹으면 나을 거야."),
+    L("A", "那你今天早点儿回家休息吧。", "그럼 오늘 일찍 집에 가서 쉬어."),
+    L("B", "好，谢谢你关心我。", "응, 신경 써 줘서 고마워."),
+    L("A", "多喝热水，别太累了。", "따뜻한 물 많이 마시고, 너무 무리하지 마."),
+    L("B", "知道了，明天见。", "알았어, 내일 봐.")
+  ]},
+  { id: "h3-chat", lv: 3, title: "最近怎么样？", sub: "오랜만에 친구와 수다", tag: "일상", lines: [
+    L("A", "好久没见了，最近怎么样？", "오랜만이야, 요즘 어때?"),
+    L("B", "还行，就是工作有点儿忙。", "그럭저럭, 일이 좀 바빠."),
+    L("A", "你还在原来的公司吗？", "아직 원래 회사 다녀?"),
+    L("B", "对，不过下个月要去上海出差。", "응, 근데 다음 달에 상하이로 출장 가."),
+    L("A", "真的？我上个月刚去过，那儿的小笼包特别好吃。", "진짜? 나 지난달에 갔다 왔는데, 거기 샤오룽바오 엄청 맛있어."),
+    L("B", "是吗？你给我推荐几家店吧。", "그래? 가게 몇 군데 추천해 줘."),
+    L("A", "没问题，我一会儿发给你。", "문제없어, 이따 보내 줄게."),
+    L("B", "太好了，下次我请你吃饭！", "잘됐다, 다음에 내가 밥 살게!")
+  ]},
+  { id: "s-reunion", lv: 4, title: "好久不见", sub: "드라마 · 심야 편의점 재회", tag: "드라마", lines: [
+    L("陈默", "林夏？真的是你？", "린샤? 정말 너야?"),
+    L("林夏", "陈默……好久不见。", "천모… 오랜만이야."),
+    L("陈默", "你什么时候回来的？怎么也不跟我说一声？", "언제 돌아왔어? 왜 나한테 말 한마디 없었어?"),
+    L("林夏", "上个月刚回来，一直挺忙的。", "지난달에 막 왔어. 계속 좀 바빴어."),
+    L("陈默", "这么晚了，你一个人在这儿干嘛呢？", "이 늦은 시간에 혼자 여기서 뭐 해?"),
+    L("林夏", "睡不着，出来买点儿东西。", "잠이 안 와서 뭐 좀 사러 나왔어."),
+    L("陈默", "那……要不要一起喝一杯？", "그럼… 같이 한잔할래?"),
+    L("林夏", "改天吧，今天太晚了。", "다음에 하자. 오늘은 너무 늦었어."),
+    L("陈默", "你还是老样子，总是拒绝我。", "넌 여전하네. 늘 날 거절하고."),
+    L("林夏", "陈默，我们都不是以前的我们了。", "천모, 우린 이제 예전의 우리가 아니야.")
+  ]},
+  { id: "s-explain", lv: 4, title: "你听我解释", sub: "드라마 · 연인의 오해", tag: "드라마", lines: [
+    L("小雨", "你昨天晚上去哪儿了？", "어젯밤에 어디 갔었어?"),
+    L("阿杰", "加班啊，不是跟你说过了吗？", "야근했지. 말했잖아?"),
+    L("小雨", "加班？我给你打了十几个电话，你一个都没接。", "야근? 내가 전화를 열 통 넘게 했는데 하나도 안 받았잖아."),
+    L("阿杰", "手机没电了。你听我解释……", "핸드폰 배터리가 나갔어. 내 말 좀 들어봐…"),
+    L("小雨", "我不想听！你每次都这样。", "듣기 싫어! 넌 맨날 이런 식이야."),
+    L("阿杰", "我真的没骗你。不信你去问小王。", "진짜 거짓말 아니야. 못 믿겠으면 샤오왕한테 물어봐."),
+    L("小雨", "算了，我累了。我们都冷静一下吧。", "됐어, 피곤해. 우리 둘 다 머리 좀 식히자."),
+    L("阿杰", "你别走！我们把话说清楚，好不好？", "가지 마! 우리 얘기 제대로 하자, 응?")
+  ]},
+  { id: "h4-work", lv: 4, title: "会议改时间了", sub: "회사 · 회의 일정", tag: "직장", lines: [
+    L("A", "明天的会议改到下午三点了，你知道吗？", "내일 회의 오후 3시로 바뀐 거 알아?"),
+    L("B", "我还没收到通知。是谁决定的？", "아직 공지 못 받았어. 누가 정한 거야?"),
+    L("A", "经理说上午客户要来，所以推迟了。", "매니저가 오전에 고객이 와서 미뤘대."),
+    L("B", "那我得把报告再准备一下。", "그럼 보고서 다시 좀 준비해야겠다."),
+    L("A", "需要我帮忙吗？", "도와줄까?"),
+    L("B", "你能帮我检查一下数据吗？我怕有错误。", "데이터 좀 확인해 줄 수 있어? 틀린 데 있을까 봐."),
+    L("A", "当然可以，你发给我吧。", "당연하지, 보내 줘."),
+    L("B", "太感谢了，改天请你喝咖啡。", "정말 고마워, 다음에 커피 살게.")
+  ]},
+  { id: "h4-rent", lv: 4, title: "租房子", sub: "집 구하기", tag: "생활", lines: [
+    L("A", "这套房子每个月房租多少？", "이 집 월세 얼마예요?"),
+    L("B", "四千五，包括物业费。", "4,500위안이고 관리비 포함이에요."),
+    L("A", "离地铁站远吗？", "지하철역에서 멀어요?"),
+    L("B", "走路五分钟，交通特别方便。", "걸어서 5분, 교통 엄청 편해요."),
+    L("A", "可以养宠物吗？", "반려동물 키워도 돼요?"),
+    L("B", "这个得问房东，我帮你联系一下。", "그건 집주인한테 물어봐야 해요, 연락해 볼게요."),
+    L("A", "好的。如果可以的话，我想下周就搬进来。", "네. 가능하면 다음 주에 바로 들어오고 싶어요."),
+    L("B", "没问题，那我们先签合同吧。", "문제없어요, 그럼 먼저 계약서 쓰죠.")
   ]}
 ].map(d => ({ ...d, kind: "tts", builtin: true, lines: d.lines.map((l, i) => ({ ...l, id: String(i) })) }));
 
 const DRAMAS = [
-  { zh: "家有儿女", en: "Home with Kids · 2005", lv: "초~중급", genre: "가족 시트콤", where: "유튜브",
+  { zh: "家有儿女", en: "Home with Kids · 2005", lv: "HSK 3~4", hsk: 3, genre: "가족 시트콤", where: "유튜브",
     why: "세 아이를 키우는 집의 하루. 숙제, 밥, 용돈, 잔소리, 형제 싸움처럼 집에서 매일 쓰는 말이 그대로 나옵니다. 회차가 짧아 한 장면 고르기 쉽습니다.",
     tip: "식탁 장면, 부모가 아이를 혼내거나 달래는 장면부터.", q: "家有儿女 第一部 第1集", ch: "中国电视剧精选 Chinese Drama", eps: [["1화","PC3DmhI-3tU"],["2화","1bCj2rxYMHI"],["3화","Nar0A5-T058"],["4화","c1ZIY_SOszU"]] },
-  { zh: "何以笙箫默", en: "My Sunshine · 2015", lv: "초급 친화", genre: "현대 로맨스", where: "넷플릭스(국가별 상이) · 유튜브",
+  { zh: "何以笙箫默", en: "My Sunshine · 2015", lv: "HSK 3~4", hsk: 3, genre: "현대 로맨스", where: "넷플릭스(국가별 상이) · 유튜브",
     why: "대학 커플이 7년 만에 다시 만나는 이야기. 구어가 쉽고 대사가 또박또박해서 처음 드라마 쉐도잉에 맞습니다.",
     tip: "두 사람이 짧게 주고받는 재회 장면이 연습하기 좋습니다.", q: "何以笙箫默 第1集", ch: "Croton Media", eps: [["1화","FdcquHw5X3M"],["2화","7G5NybK23Eg"],["3화","Dz2hLeWW_2c"]] },
-  { zh: "欢乐颂", en: "Ode to Joy · 2016", lv: "중급", genre: "상하이 도시 생활", where: "유튜브",
+  { zh: "欢乐颂", en: "Ode to Joy · 2016", lv: "HSK 4~5", hsk: 4, genre: "상하이 도시 생활", where: "유튜브",
     why: "같은 층에 사는 다섯 여자의 직장, 돈, 연애, 이웃 이야기. 실제 회사와 생활 대화, 구어 표현과 속어가 많습니다.",
     tip: "회사 회의 장면보다 집에서 이웃끼리 수다 떠는 장면이 실생활에 가깝습니다.", q: "欢乐颂 第1集", ch: "大劇獨播 · 正午阳光官方频道", eps: [["1화","4wGpu56WQGQ"],["2화","6p43WxP68mg"],["3화","O2WGa3ufBCI"]] },
-  { zh: "爱情公寓", en: "iPartment · 2009", lv: "중상급", genre: "친구 시트콤", where: "아이치이",
+  { zh: "爱情公寓", en: "iPartment · 2009", lv: "HSK 5", hsk: 5, genre: "친구 시트콤", where: "아이치이",
     why: "아파트에 사는 20대 친구들의 시트콤. 말이 빠르고 말장난과 유행어가 많아 원어민 속도 듣기 훈련용입니다. 앞의 세 작품 뒤에 보세요.",
     tip: "말장난 장면은 건너뛰고 일상 대화 장면만 고르세요.", q: "爱情公寓 第一季 第1集", ch: "YOUKU 공식", eps: [["1화","mV0HQj44vtM"],["2화","PoxpC5abUc4"]] }
 ];
@@ -490,17 +673,18 @@ const CUSTOM_PY = {
   "麻烦": "má fan", "师傅": "shī fu", "朋友": "péng you", "毛肚": "máo dǔ", "误不了": "wù bu liǎo", "晚上": "wǎn shang",
   "干嘛": "gàn má", "什么": "shén me", "时候": "shí hou", "说得": "shuō de", "觉得": "jué de", "知道": "zhī dao",
   "告诉": "gào su", "认识": "rèn shi", "喜欢": "xǐ huan", "谢谢": "xiè xie", "地方": "dì fang", "妈妈": "mā ma",
-  "爸爸": "bà ba", "哥哥": "gē ge", "姐姐": "jiě jie", "弟弟": "dì di", "妹妹": "mèi mei", "孩子": "hái zi"
+  "爸爸": "bà ba", "哥哥": "gē ge", "姐姐": "jiě jie", "弟弟": "dì di", "妹妹": "mèi mei", "孩子": "hái zi", "住得": "zhù de", "还没": "hái méi", "名字": "míng zi", "早上": "zǎo shang", "尝尝": "cháng chang", "得把": "děi bǎ", "得问": "děi wèn"
 };
 
 const MODES = {
-  0: { name: "자동 코스", hint: "재생만 누르세요. 구간마다 가리고 듣기 2번 → 보며 듣기 1번 → 따라 말하기 2번 → 겹쳐 말하기 2번을 자동으로 하고 다음 구간으로 넘어갑니다." },
+  0: { name: "자동 코스", hint: "재생만 누르세요. 문장마다 ① 가리고 듣기 → ② 병음·뜻 보며 듣기 → ③ 병음 보며 따라 말하기 → ④ 병음 보며 겹쳐 말하기 → ⑤ 아무것도 안 보고 겹쳐 말하기 순서로 자동 진행합니다." },
   1: { name: "귀로만", mask: true, hide: true, py: false, ko: false, gap: "short", hint: "자막을 가리고 소리만 듣습니다. 뜻보다 소리 덩어리와 리듬을 잡으세요." },
   2: { name: "보며 듣기", mask: false, hide: false, py: true, ko: true, gap: "short", hint: "자막과 병음을 보며 안 들리던 소리를 맞춰 봅니다. 성조 색으로 음의 오르내림을 확인하세요." },
-  3: { name: "따라 말하기", mask: false, hide: false, py: true, ko: false, gap: "speak", hint: "구간이 끝나면 멈춥니다. 노란 막대가 줄어드는 동안 같은 속도와 억양으로 소리 내어 따라 하세요." },
-  4: { name: "겹쳐 말하기", mask: false, hide: false, py: false, ko: false, gap: "none", hint: "멈춤 없이 0.5초 뒤를 그림자처럼 겹쳐 말합니다. 1.0×에서 막히지 않으면 그 장면은 끝입니다." }
+  3: { name: "병음 보며 따라 말하기", mask: false, hide: false, py: true, ko: false, gap: "speak", hint: "구간이 끝나면 멈춥니다. 노란 막대가 줄어드는 동안 같은 속도와 억양으로 소리 내어 따라 하세요." },
+  4: { name: "병음 보며 겹쳐 말하기", mask: false, hide: false, py: true, ko: false, gap: "none", hint: "병음을 보면서 멈춤 없이 0.5초 뒤를 그림자처럼 겹쳐 말합니다." },
+  5: { name: "안 보고 겹쳐 말하기", mask: true, hide: true, py: false, ko: false, gap: "none", hint: "글자 없이 소리만 듣고 겹쳐 말합니다. 1.0×에서 막히지 않으면 그 문장은 熟입니다." }
 };
-const COURSE = [{ m: 1, n: 2 }, { m: 2, n: 1 }, { m: 3, n: 2 }, { m: 4, n: 2 }];
+const COURSE = [{ m: 1, n: 2 }, { m: 2, n: 1 }, { m: 3, n: 2 }, { m: 4, n: 1 }, { m: 5, n: 1 }];
 const SPEEDS = [0.5, 0.75, 1, 1.25];
 const REPS = [1, 2, 3, 5, Infinity];
 const GAPS = [1, 1.5, 2];
@@ -540,7 +724,7 @@ function rubyHTML(zh) {
       if (!x.isZh) return `<span class="pz">${esc(x.origin)}</span>`;
       let py = x.pinyin, t = x.num;
       if (x.origin === "儿" && k > 0 && a[k - 1].isZh && !NOT_ER.has(a[k - 1].origin) && !(a[k + 1] && "子童女".includes(a[k + 1].origin))) { py = "r"; t = 0; }
-      return `<ruby class="t${t}">${esc(x.origin)}<rt>${esc(py)}</rt></ruby>`;
+      return `<ruby class="t${t}" data-i="${k}">${esc(x.origin)}<rt${py.length >= 5 ? ' class="lg"' : ""}>${esc(py)}</rt></ruby>`;
     }).join("");
   } catch { return esc(zh); }
 }
@@ -554,20 +738,80 @@ const S = {
   mode: [0, 1, 2, 3, 4].includes(prefs.mode) ? prefs.mode : 0, dmode: 2,
   speed: SPEEDS.includes(prefs.speed) ? prefs.speed : 0.75,
   rep: prefs.rep === "inf" ? Infinity : (REPS.includes(prefs.rep) ? prefs.rep : 2),
-  auto: prefs.auto ?? true, skipOk: prefs.skipOk ?? false,
+  auto: prefs.auto ?? true, skipOk: prefs.skipOk ?? false, rec: prefs.rec ?? true, zs: [0.9, 1, 1.2].includes(prefs.zs) ? prefs.zs : 1,
   gapMul: GAPS.includes(prefs.gapMul) ? prefs.gapMul : 1.5,
   voiceURI: prefs.voiceURI || "",
   maskH: prefs.maskH || 20,
   showPy: true, showKo: true, reveal: false, mask: false,
-  playing: false, view: "vPractice"
+  playing: false, view: "vScenes", level: [2, 3, 4].includes(prefs.level) ? prefs.level : 3
 };
 function savePrefs() {
-  LS.set("prefs", { mode: S.mode, speed: S.speed, rep: S.rep === Infinity ? "inf" : S.rep, auto: S.auto, skipOk: S.skipOk, gapMul: S.gapMul, voiceURI: S.voiceURI, maskH: S.maskH, scene: S.scene?.id });
+  LS.set("prefs", { rec: S.rec, zs: S.zs, level: S.level, mode: S.mode, speed: S.speed, rep: S.rep === Infinity ? "inf" : S.rep, auto: S.auto, skipOk: S.skipOk, gapMul: S.gapMul, voiceURI: S.voiceURI, maskH: S.maskH, scene: S.scene?.id });
 }
 function saveMine() { if (!LS.set("scenes", S.mine)) toast("저장 공간이 부족해요. 안 쓰는 장면을 지워 주세요."); }
 const allScenes = () => [...S.mine, ...SAMPLES];
 const isYT = () => S.scene && S.scene.kind === "yt";
-function items() { return isYT() ? S.scene.clips : S.scene.lines; }
+function items() { return isYT() ? [] : S.scene.lines; }
+/* Sentence cuts for YouTube scenes: while listening (step 1-2) the learner taps when a sentence ends. */
+let cutting = null;
+function startCutting(s, e) { cutting = { s, e, t: [] }; $("#cutN").textContent = "0"; $("#cutBtn").hidden = false; }
+function endCutting(key, s, e) {
+  $("#cutBtn").hidden = true; if (!cutting) return;
+  const t = cutting.t.filter(x => x > s + 0.8 && x < e - 0.8).sort((a, b) => a - b);
+  if (t.length >= 2) { S.scene.cuts[key] = t.map(x => +x.toFixed(2)); saveMine(); }
+  cutting = null;
+}
+function segsFor(s, e, cuts) {
+  const out = [];
+  if (cuts && cuts.length) { let a = s; for (const c of [...cuts, e]) { if (c - a >= 0.8) out.push([Math.max(s, a - 0.15), Math.min(e, c + 0.25)]); a = c; } return out; }
+  for (let t = s; t < e; t += CHUNK) out.push([t, Math.min(e, t + CHUNK)]);
+  return out;
+}
+/* ---- YouTube scenes: practise a continuous stretch (default 1 minute), no manual line marking ---- */
+const LENS = [30, 60, 120];
+const CHUNK = 4;
+function ytRange() { const sc = S.scene; sc.s0 = Math.max(0, sc.s0 ?? Math.floor(sc.t0 || 0)); sc.len = LENS.includes(sc.len) ? sc.len : 60; return { s: sc.s0, e: sc.s0 + sc.len }; }
+function ytDone() { return (S.scene.done ||= []); }
+function setRange(s0) { S.scene.s0 = Math.max(0, Math.floor(s0)); saveMine(); renderLine(); renderList(); renderTopPg(); }
+async function playScene(my) {
+  const { s, e } = ytRange();
+  const steps = S.mode === 0 ? [1, 2, 3, 4, 5] : [S.mode];
+  const key = String(s); S.scene.cuts ||= {};
+  for (const m of steps) {
+    if (my !== runId) return;
+    setDisplay(m);
+    const name = (S.mode === 0 ? "STEP " + m + " " : "") + MODES[m].name;
+    if (m === 3) {
+      const segs = segsFor(s, e, S.scene.cuts[key]);
+      for (let k = 0; k < segs.length && my === runId; k++) {
+        const [a, b] = segs[k];
+        playLabel = name + " · " + (k + 1) + "/" + segs.length + (S.scene.cuts[key] ? " 문장" : " 조각");
+        setPhase("play", 0, playLabel);
+        const dur = await playClip({ s: a, e: b }, rateFor(m), my);
+        if (my !== runId) return;
+        if (dur === -2) { stop(); return; }
+        if (dur < 0) { stop(); toast(ytErr ? "영상을 재생할 수 없어요." : "영상을 한 번 직접 눌러 재생한 뒤 다시 시도하세요."); return; }
+        const gap = Math.max(1200, dur * S.gapMul + 300);
+        setPhase("speak", gap); recordFor(gap, "y" + s + "-" + k, { seg: { s: a, e: b } }); await sleep(gap);
+      }
+    } else {
+      playLabel = name; setPhase("play", 0, playLabel);
+      const collect = (m === 1 || m === 2) && !(S.scene.cuts[key] && m === 2);
+      if (collect) startCutting(s, e);
+      const dur = await playClip({ s, e }, rateFor(m), my);
+      if (collect) endCutting(key, s, e);
+      if (my !== runId) return;
+      if (dur === -2) { stop(); return; }
+      if (dur < 0) { stop(); toast(ytErr ? "영상을 재생할 수 없어요." : "영상을 한 번 직접 눌러 재생한 뒤 다시 시도하세요."); return; }
+      if (S.mode === 0 && m !== 5) { setPhase("pause", 1500); await sleep(1500); }
+    }
+  }
+  if (my !== runId) return;
+  const d = ytDone(); if (!d.includes(s)) { d.push(s); saveMine(); }
+  stop(); if (S.mode === 0) setDisplay(2); setPhase("end");
+  renderList(); renderTopPg(); renderLine();
+  toast("이 장면 끝! '다음' 버튼으로 다음 " + (S.scene.len >= 60 ? S.scene.len / 60 + "분" : S.scene.len + "초") + "으로 넘어가세요.");
+}
 function cur() { return items()[S.idx]; }
 let PROG = {};
 function loadProg() { PROG = LS.get("prog." + S.scene.id, {}) || {}; }
@@ -700,6 +944,86 @@ function parseYT(input) {
   return id && /^[\w-]{11}$/.test(id) ? { id, t } : null;
 }
 
+/* ================= my-voice recorder (compare with the native audio) ================= */
+const REC = { stream: null, ok: null, urls: new Map(), last: null };
+async function ensureMic() {
+  if (!S.rec || REC.ok === false) return false;
+  if (REC.ok) return true;
+  if (!navigator.mediaDevices || !window.MediaRecorder) { REC.ok = false; return false; }
+  // Ask once, then release the mic right away: an open mic on iPhone can route playback to the earpiece.
+  try { const st = await navigator.mediaDevices.getUserMedia({ audio: true }); st.getTracks().forEach(t => t.stop()); REC.ok = true; return true; }
+  catch { REC.ok = false; toast("마이크를 허용하지 않아 녹음 비교는 꺼둡니다."); return false; }
+}
+async function recordFor(ms, key, ref) {
+  if (!S.rec || !REC.ok) return;
+  const t0 = performance.now();
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { return; }
+  ms -= performance.now() - t0;
+  try {
+    const type = ["audio/mp4", "audio/webm"].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+    const mr = new MediaRecorder(stream, type ? { mimeType: type } : undefined); const parts = [];
+    mr.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
+    mr.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      if (!parts.length) return;
+      const old = REC.urls.get(key); if (old) URL.revokeObjectURL(old.url);
+      REC.urls.set(key, { url: URL.createObjectURL(new Blob(parts, { type: parts[0].type })), ...ref, sceneId: S.scene.id });
+      REC.last = key; renderCompare();
+    };
+    mr.start(); setTimeout(() => { try { mr.state !== "inactive" && mr.stop(); } catch {} }, Math.max(800, ms - 150));
+  } catch { stream.getTracks().forEach(t => t.stop()); }
+}
+function compareTarget() {
+  if (isYT()) { const r = REC.last && REC.urls.get(REC.last); return r && r.sceneId === S.scene.id ? r : null; }
+  const it = cur(); return it ? REC.urls.get(it.id) : null;
+}
+function renderCompare() { const r = compareTarget(); $("#cmpRow").hidden = !r; }
+let cmpAudio = null;
+async function playMine() { const r = compareTarget(); if (!r) return; stop(); try { cmpAudio && cmpAudio.pause(); cmpAudio = new Audio(r.url); await cmpAudio.play(); } catch { toast("녹음을 재생하지 못했어요."); } }
+async function playCompare() {
+  const r = compareTarget(); if (!r) return; stop(); TTS.unlock();
+  const my = ++runId; S.playing = true; renderPlayBtn();
+  setPhase("play", 0, "원어민");
+  if (isYT()) await playClip(r.seg, S.speed, my); else await TTS.speak(r.item.zh, S.speed);
+  if (my !== runId) return;
+  setPhase("play", 0, "내 목소리");
+  await new Promise(res => { try { cmpAudio && cmpAudio.pause(); cmpAudio = new Audio(r.url); cmpAudio.onended = res; cmpAudio.onerror = res; cmpAudio.play().catch(res); } catch { res(); } });
+  if (my === runId) stop();
+}
+/* ================= 熟 question after the last step ================= */
+let askT = null;
+function askOk(it) {
+  const a = $("#okAsk"); a.hidden = false; a.dataset.id = it.id;
+  clearTimeout(askT); askT = setTimeout(() => { a.hidden = true; }, 9000);
+}
+/* ================= vocabulary ================= */
+let VOCAB = LS.get("vocab", []) || [];
+let pick = null;
+function saveVocab() { LS.set("vocab", VOCAB); }
+function pickChar(i, line) {
+  if (!pick || pick.line !== line) pick = { line, a: i, b: i };
+  else if (i === pick.a && i === pick.b) { pick = null; }
+  else { pick.a = Math.min(pick.a, i); pick.b = Math.max(pick.b, i); if (pick.b - pick.a > 5) pick.a = pick.b = i; }
+  renderPick();
+}
+function renderPick() {
+  document.querySelectorAll("#zhline ruby.sel").forEach(r => r.classList.remove("sel"));
+  const chip = $("#pickChip");
+  if (!pick) { chip.hidden = true; return; }
+  const rubies = [...document.querySelectorAll("#zhline ruby")];
+  let w = "", py = [];
+  rubies.forEach(r => { const i = +r.dataset.i; if (i >= pick.a && i <= pick.b) { r.classList.add("sel"); w += r.firstChild.textContent; py.push(r.querySelector("rt").textContent); } });
+  pick.w = w; pick.py = py.join(" ");
+  const has = VOCAB.some(v => v.w === w);
+  chip.hidden = false; chip.innerHTML = `<b lang="zh-CN">${esc(w)}</b> ${esc(pick.py)} <button type="button" id="pickAdd">${has ? "단어장에 있음" : "단어장에 추가"}</button><span class="help">옆 글자를 누르면 단어가 길어져요</span>`;
+}
+function addPick() {
+  if (!pick || !pick.w || VOCAB.some(v => v.w === pick.w)) return;
+  const it = cur();
+  VOCAB.unshift({ w: pick.w, py: pick.py, ex: it ? it.zh : "", ko: it ? it.ko : "", at: Date.now() }); saveVocab();
+  toast("「" + pick.w + "」 단어장에 넣었어요."); pick = null; renderPick();
+}
+
 /* ================= player loop ================= */
 let runId = 0, wakeLock = null;
 async function wake() { try { if (navigator.wakeLock && !wakeLock) wakeLock = await navigator.wakeLock.request("screen"); } catch { wakeLock = null; } }
@@ -712,12 +1036,14 @@ function gapFor(m, dur) {
   return 650;
 }
 function nextIdx(j) { const list = items(); if (S.skipOk) while (j < list.length && pOf(list[j]).ok) j++; return j; }
-async function playOne(it, my) {
-  if (isYT()) return playClip(it, S.speed, my);
-  setBar("indet"); return TTS.speak(it.zh, S.speed);
+function rateFor(m) { return (S.mode === 0 && m >= 4) ? Math.max(S.speed, 1) : S.speed; }
+async function playOne(it, my, rate) {
+  if (isYT()) return playClip(it, rate ?? S.speed, my);
+  setBar("indet"); return TTS.speak(it.zh, rate ?? S.speed);
 }
 async function play(from, once) {
-  const list = items(); if (!list.length) { toast("먼저 구간을 만들어 주세요."); return; }
+  if (isYT()) { const my = ++runId; haltAll(); S.playing = true; renderPlayBtn(); wake(); return playScene(my); }
+  const list = items(); if (!list.length) return;
   const course = S.mode === 0 && !once;
   const auto = once ? false : S.auto;
   const my = ++runId; haltAll();
@@ -731,9 +1057,9 @@ async function play(from, once) {
       const { m, n } = plan[st];
       if (course) setDisplay(m);
       for (let k = 0; k < n && my === runId; k++) {
-        playLabel = (course ? "STEP " + m + " " + MODES[m].name : (m === 4 ? "들으며 겹쳐 말하기" : "듣기")) + (n > 1 ? " · " + (k + 1) + "/" + (n === Infinity ? "∞" : n) : "");
+        playLabel = (course ? "STEP " + m + " " + MODES[m].name : (m >= 4 ? "들으며 겹쳐 말하기" : "듣기")) + (n > 1 ? " · " + (k + 1) + "/" + (n === Infinity ? "∞" : n) : "");
         setPhase("play", 0, playLabel);
-        const dur = await playOne(list[i], my);
+        const dur = await playOne(list[i], my, rateFor(m));
         if (my !== runId) return;
         if (dur === -2) { stop(); return; }
         if (dur < 0) { stop(); toast(ytErr ? "영상을 재생할 수 없어요." : "영상을 한 번 직접 눌러 재생한 뒤 다시 시도하세요."); return; }
@@ -742,9 +1068,11 @@ async function play(from, once) {
         const lastHere = st === plan.length - 1 && k === n - 1;
         const endAll = lastHere && (!auto || nextIdx(i + 1) >= list.length);
         const g = MODES[m].gap;
+        if (course && m === 5 && k === n - 1 && !pOf(list[i]).ok) askOk(list[i]);
         if (!endAll || g === "speak") {
           const gap = gapFor(m, dur);
           setPhase(g === "speak" ? "speak" : "pause", gap);
+          if (g === "speak") recordFor(gap, list[i].id, { item: list[i] });
           await sleep(gap); if (my !== runId) return;
         }
       }
@@ -756,12 +1084,12 @@ async function play(from, once) {
     const finished = i >= list.length;
     stop();
     if (course) setDisplay(2);
-    if (finished) setPhase("end");
+    if (finished) { setPhase("end"); if (course) toast("끝! 입에 붙은 문장은 熟 도장을 찍어 두세요."); }
   }
 }
-function stop() { runId++; haltAll(); S.playing = false; renderPlayBtn(); setPhase("idle"); unwake(); }
-function togglePlay() { TTS.unlock(); if (S.playing) stop(); else play(S.idx); }
-function go(d) { TTS.unlock(); const n = items().length; if (!n) return; const j = Math.min(n - 1, Math.max(0, S.idx + d)); if (S.playing) play(j); else setIdx(j); }
+function stop() { runId++; haltAll(); cutting = null; const st = document.getElementById("steps"); if (st) st.hidden = true; const cb = document.getElementById("cutBtn"); if (cb) cb.hidden = true; S.playing = false; renderPlayBtn(); setPhase("idle"); unwake(); }
+function togglePlay() { TTS.unlock(); if (S.playing) stop(); else { ensureMic(); play(S.idx); } }
+function go(d) { TTS.unlock(); if (isYT()) { const wasPlaying = S.playing; stop(); setRange(ytRange().s + d * S.scene.len); if (wasPlaying) play(); return; } const n = items().length; if (!n) return; const j = Math.min(n - 1, Math.max(0, S.idx + d)); if (S.playing) play(j); else setIdx(j); }
 function bump(it) { const p = (PROG[it.id] ||= { r: 0, ok: false }); p.r = (p.r || 0) + 1; saveProg(); updateRow(it); }
 
 /* ================= render ================= */
@@ -788,14 +1116,14 @@ function renderPlayBtn() {
 }
 function renderSceneHead() {
   const sc = S.scene;
-  $("#sceneK").textContent = sc.kind === "yt" ? "YOUTUBE" : (sc.builtin ? "기본 대본" : "내 대사");
+  $("#sceneK").textContent = sc.kind === "yt" ? "드라마" : (sc.builtin ? "HSK " + sc.lv + " · " + (sc.tag || "") : "내 대사");
   $("#sceneT").textContent = sc.title || "제목 불러오는 중";
   $("#sceneT").lang = /[一-鿿]/.test(sc.title || "") ? "zh-CN" : "ko";
   $("#sceneS").textContent = sc.sub || "";
   $("#sceneTools").hidden = !!sc.builtin;
-  $("#startCard").hidden = S.mine.some(x => x.kind === "yt");
 }
 function renderTopPg() {
+  if (isYT()) { $("#pgOk").textContent = ytDone().length; $("#pgAll").textContent = "장면"; return; }
   const list = items(); let ok = 0; for (const it of list) if (pOf(it).ok) ok++;
   $("#pgOk").textContent = ok; $("#pgAll").textContent = list.length;
 }
@@ -813,9 +1141,21 @@ function renderEngineTag() {
   const t = $("#engineTag"); if (!S.scene) return;
   if (isYT()) t.textContent = "배우 목소리";
   else if (!TTS.ok) t.textContent = "음성 합성 미지원";
-  else t.textContent = TTS.voice ? "음성 합성 · " + TTS.voice.name.replace(/\s*\(.*\)\s*/, "") : "음성 합성";
+  else t.textContent = "";
 }
 function renderLine() {
+  if (isYT()) {
+    const { s, e } = ytRange(), done = ytDone().includes(s);
+    el.stage.classList.toggle("nopy", true);
+    el.lineNo.textContent = "장면 " + fmtT(s) + " – " + fmtT(e);
+    el.who.hidden = true; el.zh.innerHTML = ""; el.ko.hidden = true; el.reveal.hidden = true;
+    el.empty.hidden = false;
+    el.empty.textContent = MODES[S.dmode].hide ? "자막을 가렸어요. 소리에만 집중하세요."
+      : (S.scene.cuts && S.scene.cuts[String(s)] ? "문장 " + (S.scene.cuts[String(s)].length + 1) + "개로 나눠져 있어요. ▶를 누르면 5단계로 연습합니다."
+        : "▶를 누르면 5단계로 연습합니다. 1단계에서 문장이 끝날 때마다 노란 버튼을 탭하면 3단계부터 문장 단위로 끊어 줍니다.");
+    el.seal.hidden = !done; $("#okBtn").setAttribute("aria-pressed", String(done));
+    $("#editor").hidden = true; $("#pickChip").hidden = true; renderCompare(); return;
+  }
   const list = items(), it = list[S.idx], yt = isYT();
   el.stage.classList.toggle("nopy", !S.showPy || !PP);
   if (!it) {
@@ -836,7 +1176,7 @@ function renderLine() {
   }
   el.ko.hidden = hidden || !S.showKo || !it.ko; el.ko.textContent = it.ko || "";
   const ok = !!pOf(it).ok; el.seal.hidden = !ok; $("#okBtn").setAttribute("aria-pressed", String(ok));
-  renderEditor();
+  renderEditor(); renderCompare(); if (pick) renderPick(); else $("#pickChip").hidden = true;
 }
 function renderEditor() {
   const ed = $("#editor"), it = cur();
@@ -850,7 +1190,7 @@ function renderModes() {
   document.querySelectorAll("#modes button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.m === S.mode)));
   $("#modeHint").textContent = MODES[S.mode].hint;
   el.lines.classList.toggle("blind", !!MODES[S.dmode].hide);
-  $("#repOpt").hidden = S.mode === 0;
+  $("#repOpt").hidden = S.mode === 0 || isYT();
 }
 function chipRow(host, values, curV, label, onPick) {
   host.innerHTML = values.map((v, k) => `<button type="button" data-k="${k}" aria-pressed="${v === curV}">${label(v)}</button>`).join("");
@@ -859,7 +1199,10 @@ function chipRow(host, values, curV, label, onPick) {
 function renderOpts() {
   chipRow($("#speedChips"), SPEEDS, S.speed, v => (v === 1 ? "1.0" : String(v)) + "×", v => { S.speed = v; savePrefs(); renderOpts(); });
   chipRow($("#repChips"), REPS, S.rep, v => v === Infinity ? "∞" : v + "번", v => { S.rep = v; savePrefs(); renderOpts(); });
+  chipRow($("#lenChips"), LENS, S.scene && S.scene.len, v => v >= 60 ? v / 60 + "분" : v + "초", v => { if (!isYT()) return; S.scene.len = v; saveMine(); renderOpts(); renderLine(); renderList(); });
+  $("#lenOpt").hidden = !isYT();
   chipRow($("#gapChips"), GAPS, S.gapMul, v => "×" + v, v => { S.gapMul = v; savePrefs(); renderOpts(); });
+  $("#recT").checked = S.rec; chipRow($("#zsChips"), [0.9, 1, 1.2], S.zs, v => v < 1 ? "작게" : v > 1 ? "크게" : "보통", v => { S.zs = v; savePrefs(); applyZs(); renderOpts(); });
   $("#autoT").checked = S.auto; $("#skipT").checked = S.skipOk; $("#pyT").checked = S.showPy; $("#koT").checked = S.showKo; $("#pyT").disabled = !PP;
 }
 function rowHTML(it, i) {
@@ -872,6 +1215,16 @@ function rowHTML(it, i) {
     `<span class="mt"><span class="reps">${p.r ? "×" + p.r : ""}</span>${p.ok ? '<span class="seal-xs">熟</span>' : ""}</span></button></li>`;
 }
 function renderList() {
+  if (isYT()) {
+    const { s } = ytRange(), d = ytDone().slice().sort((a, b) => a - b), len = S.scene.len;
+    $("#listTitle").textContent = "이 회차 장면"; $("#listCnt").textContent = "완료 " + d.length;
+    const rows = [...new Set([...d, s, s + len])].sort((a, b) => a - b);
+    el.lines.innerHTML = rows.map(t => `<li><button type="button" class="ln${t === s ? " cur" : ""}" data-t="${t}"><span class="no">${fmtT(t)}</span><span class="tx"><span class="dim">${fmtT(t)} – ${fmtT(t + len)}${t === s ? " · 지금 장면" : (d.includes(t) ? "" : " · 다음")}</span></span><span class="mt">${d.includes(t) ? '<span class="seal-xs">熟</span>' : ""}</span></button></li>`).join("");
+    $("#listEmpty").hidden = false;
+    $("#listEmpty").textContent = "회차 처음에는 오프닝 노래가 나와요. 대화가 시작되는 곳에서 '여기서부터 연습'을 누르세요.";
+    renderTopPg(); return;
+  }
+  $("#listEmpty").hidden = true;
   const list = items(), yt = isYT();
   $("#listTitle").textContent = yt ? "내가 찍은 구간" : "대본";
   $("#listCnt").textContent = list.length + (yt ? "구간" : "줄");
@@ -885,15 +1238,21 @@ function updateRow(it) {
   renderTopPg();
 }
 function setIdx(i) {
-  S.idx = i; S.reveal = false;
+  S.idx = i; S.reveal = false; pick = null; $("#okAsk").hidden = true;
   el.lines.querySelectorAll(".ln.cur").forEach(b => { b.classList.remove("cur"); b.removeAttribute("aria-current"); });
   const b = el.lines.querySelector(`.ln[data-i="${i}"]`); if (b) { b.classList.add("cur"); b.setAttribute("aria-current", "true"); }
   LS.set("pos." + S.scene.id, i); renderLine();
 }
+function renderSteps(m) {
+  const el2 = $("#steps"); if (!el2) return;
+  if (!S.playing || S.mode !== 0) { el2.hidden = true; return; }
+  el2.hidden = false; el2.innerHTML = [1, 2, 3, 4, 5].map(k => `<i class="${k < m ? "done" : k === m ? "on" : ""}" title="STEP ${k}"></i>`).join("");
+}
 function setDisplay(m) {
+  pick = null; const pc = document.getElementById("pickChip"); if (pc) pc.hidden = true;
   S.dmode = m; S.showPy = MODES[m].py; S.showKo = MODES[m].ko; S.reveal = false;
   if (isYT()) S.mask = MODES[m].mask;
-  renderModes(); renderOpts(); renderStage();
+  renderModes(); renderOpts(); renderStage(); renderSteps(m);
 }
 function applyMode(m) {
   S.mode = m; if (S.playing) stop();
@@ -938,32 +1297,54 @@ function onJust() {
   const t = ytNow(); try { YTP.pauseVideo(); } catch {}
   markStart = null; renderMarkBtn(); addClip(Math.max(0, t - 3.5), t + 0.1);
 }
-function renderMarkBtn() {
-  const b = $("#markBtn"); const on = markStart != null;
-  b.classList.toggle("rec", on);
-  b.textContent = on ? "■ 구간 끝 · " + ((performance.now() - markT0) / 1000).toFixed(1) + "초" : "● 구간 시작";
-}
+function renderMarkBtn() {}
 setInterval(() => {
   if (document.hidden || !isYT() || !ytReady || S.view !== "vPractice") return;
   $("#nowT").textContent = fmtT1(ytNow());
-  if (markStart != null) renderMarkBtn();
 }, 200);
 
 /* ================= scenes ================= */
 function deckRow(sc) {
-  const p = LS.get("prog." + sc.id, {}) || {}; const list = sc.kind === "yt" ? sc.clips : sc.lines;
-  const ok = list.filter(it => p[it.id] && p[it.id].ok).length;
-  const pct = list.length ? Math.round(ok / list.length * 100) : 0;
+  const p = LS.get("prog." + sc.id, {}) || {}; const list = sc.kind === "yt" ? [] : sc.lines;
+  const ok = sc.kind === "yt" ? (sc.done || []).length : list.filter(it => p[it.id] && p[it.id].ok).length;
+  const pct = sc.kind === "yt" ? Math.min(100, ok * 10) : (list.length ? Math.round(ok / list.length * 100) : 0);
   return `<li><button type="button" class="deckrow" data-id="${esc(sc.id)}"${S.scene === sc ? ' aria-current="true"' : ""}>` +
-    `<span class="dt" lang="${/[一-鿿]/.test(sc.title || "") ? "zh-CN" : "ko"}">${esc(sc.title || "제목 없음")}</span><span class="ds">${esc(sc.sub || (sc.kind === "yt" ? list.length + "구간" : list.length + "줄"))}</span>` +
-    `<span class="dm"><span class="tag">${sc.kind === "yt" ? "유튜브" : (sc.builtin ? "음성 합성" : "붙여넣기")}</span><span>熟 ${ok}/${list.length}</span></span>` +
+    `<span class="dt" lang="${/[一-鿿]/.test(sc.title || "") ? "zh-CN" : "ko"}">${esc(sc.title || "제목 없음")}</span><span class="ds">${esc(sc.sub || (sc.kind === "yt" ? "유튜브 회차" : list.length + "줄"))}</span>` +
+    `<span class="dm"><span class="tag">${sc.kind === "yt" ? "드라마" : esc(sc.tag || "내 대사")}</span><span>${sc.kind === "yt" ? "장면 완료 " + ok : "熟 " + ok + "/" + list.length}</span></span>` +
     `<span class="deckbar"><i style="width:${pct}%"></i></span></button></li>`;
+}
+function okCount(sc) { const p = LS.get("prog." + sc.id, {}) || {}; const list = sc.kind === "yt" ? sc.clips : sc.lines; return list.filter(it => p[it.id] && p[it.id].ok).length; }
+function todayDeck() {
+  const decks = SAMPLES.filter(d => d.lv === S.level);
+  return decks.find(d => okCount(d) < d.lines.length * 0.7) || decks[0];
 }
 function renderScenes() {
   const mine = S.mine.slice().sort((a, b) => (b.created || 0) - (a.created || 0));
+  $("#lvRow").innerHTML = LEVELS.map(l => `<button type="button" data-lv="${l.lv}" aria-pressed="${l.lv === S.level}"><b>${l.name}</b><small>${l.sub}</small></button>`).join("");
+  const d = todayDeck(), ok = okCount(d), lvl = LEVELS.find(l => l.lv === S.level);
+  const dramaHint = DRAMAS.filter(x => x.hsk === S.level).map(x => x.zh).join(" · ");
+  $("#todayCard").innerHTML = `<span class="k">오늘의 5분 · ${lvl.name} · ${esc(d.tag)}</span><span class="t" lang="zh-CN">${esc(d.title)}</span><span class="s">${esc(d.sub)} · ${d.lines.length}문장 · 熟 ${ok}/${d.lines.length}</span>` +
+    `<span class="dots">${d.lines.map((_, i) => `<i class="${i < ok ? "on" : ""}"></i>`).join("")}</span>` +
+    `<button class="go" type="button" id="todayGo">▶ 시작 (약 ${Math.max(3, Math.round(d.lines.length * 0.6))}분)</button>` +
+    `<span class="alt"><button type="button" id="todayDrama">${dramaHint ? "이 레벨 드라마: " + esc(dramaHint) : "드라마로 연습하기"}</button></span>`;
+  $("#lvTitle").textContent = lvl.name + " 전체 대본 (" + SAMPLES.filter(x => x.lv === S.level).length + "개)";
+  $("#vocabTitle").textContent = "단어장 (" + VOCAB.length + ")";
+  $("#vocabList").innerHTML = VOCAB.map((v, i) => `<li><div class="deckrow" style="cursor:default"><span class="dt" lang="zh-CN">${esc(v.w)} <small style="font-family:var(--f-ui);font-size:13px;color:var(--accent)">${esc(v.py)}</small></span><span class="ds" lang="zh-CN">${esc(v.ex)}${v.ko ? " · " + esc(v.ko) : ""}</span><span class="dm"><button class="mini" type="button" data-say="${i}">듣기</button><button class="mini" type="button" data-del="${i}">삭제</button></span></div></li>`).join("");
+  $("#vocabEmpty").hidden = !!VOCAB.length;
+  const lb = LS.get("lastBackup", 0), hasData = S.mine.length || VOCAB.length;
+  const days = lb ? Math.floor((Date.now() - lb) / 864e5) : null;
+  $("#bkNote").hidden = !(hasData && (days == null || days >= 7));
+  $("#bkNote").innerHTML = (days == null ? "아직 백업한 적이 없어요." : days + "일 동안 백업 안 했어요.") + ' 기록은 이 폰에만 있어요. <button class="mini" type="button" id="bkQuick">지금 iCloud에 백업</button>';
+  $("#sampleList").innerHTML = SAMPLES.filter(x => x.lv === S.level).map(deckRow).join("");
   $("#myList").innerHTML = mine.map(deckRow).join(""); $("#myEmpty").hidden = !!mine.length;
-  $("#sampleList").innerHTML = SAMPLES.map(deckRow).join("");
   renderVoiceSel();
+}
+function startToday() {
+  TTS.unlock(); ensureMic();
+  const d = todayDeck(), lvl = LEVELS.find(l => l.lv === S.level);
+  S.mode = 0; S.speed = lvl.speed; S.auto = true;
+  switchView("vPractice"); selectScene(d.id); renderOpts();
+  play(firstUndone());
 }
 function renderVoiceSel() {
   const sel = $("#voiceSel"); if (!sel) return;
@@ -985,7 +1366,7 @@ function addYTFrom(urlEl, titleEl, errId) {
   S.mine.push(sc); saveMine();
   urlEl.value = ""; if (titleEl) titleEl.value = "";
   switchView("vPractice"); selectScene(sc.id);
-  toast("영상을 재생하고, 따라 할 대사에서 '● 구간 시작'을 누르세요.");
+  toast("대화가 시작되는 곳에서 '여기서부터 연습'을 누르고 ▶.");
 }
 function parsePaste(text) {
   const out = [];
@@ -1020,7 +1401,7 @@ function deleteScene() {
   selectScene(next ? next.id : SAMPLES[0].id); toast("삭제했어요.");
 }
 async function backupSave() {
-  const data = { app: "genduju", v: 2, at: new Date().toISOString(), scenes: S.mine, prog: {} };
+  const data = { app: "genduju", v: 3, at: new Date().toISOString(), scenes: S.mine, vocab: VOCAB, prog: {} };
   for (const sc of allScenes()) { const p = LS.get("prog." + sc.id, null); if (p) data.prog[sc.id] = p; }
   const name = "genduju-backup-" + new Date().toISOString().slice(0, 10) + ".json";
   const json = JSON.stringify(data);
@@ -1029,12 +1410,13 @@ async function backupSave() {
     const file = new File([json], name, { type: "application/json" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title: "跟读剧场 백업" });
-      m.textContent = "백업을 보냈어요. '파일에 저장'으로 iCloud Drive에 두면 안전합니다."; m.hidden = false; return;
+      LS.set("lastBackup", Date.now()); if (S.view === "vScenes") renderScenes();
+      m.textContent = "백업을 보냈어요. '파일에 저장' › iCloud Drive에 두면 안전합니다."; m.hidden = false; toast("공유 창에서 '파일에 저장' › iCloud Drive를 고르세요."); return;
     }
   } catch (e) { if (e && e.name === "AbortError") return; }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([json], { type: "application/json" })); a.download = name;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
-  m.textContent = "백업 파일을 만들었어요."; m.hidden = false;
+  LS.set("lastBackup", Date.now()); m.textContent = "백업 파일을 만들었어요."; m.hidden = false; if (S.view === "vScenes") renderScenes();
 }
 async function backupLoad(f) {
   const m = $("#bkMsg");
@@ -1043,6 +1425,7 @@ async function backupLoad(f) {
     if (!d || d.app !== "genduju" || !Array.isArray(d.scenes)) throw 0;
     let n = 0;
     for (const sc of d.scenes) if (sc && sc.id && !S.mine.some(x => x.id === sc.id)) { S.mine.push(sc); n++; }
+    for (const v of (d.vocab || [])) if (v && v.w && !VOCAB.some(x => x.w === v.w)) VOCAB.push(v); saveVocab();
     for (const [id, p] of Object.entries(d.prog || {})) { const c0 = LS.get("prog." + id, {}) || {}; LS.set("prog." + id, { ...p, ...c0 }); }
     saveMine(); renderScenes(); renderSceneHead(); m.textContent = "백업을 불러왔어요. 새 장면 " + n + "개."; m.hidden = false;
   } catch { m.textContent = "이 앱의 백업 파일이 아니에요."; m.hidden = false; }
@@ -1052,10 +1435,10 @@ async function backupLoad(f) {
 function renderDramas() {
   $("#dramaList").innerHTML = DRAMAS.map(d =>
     `<article class="drama"><div class="drama-h"><span class="zh" lang="zh-CN">${esc(d.zh)}</span><span class="en">${esc(d.en)}</span></div>` +
-    `<div class="facts"><span class="lv">${esc(d.lv)}</span><span>${esc(d.genre)}</span><span>${esc(d.where)}</span></div>` +
+    `<div class="facts"><span class="lv">${esc(d.lv)}${d.hsk === S.level ? " · 내 레벨" : ""}</span><span>${esc(d.genre)}</span><span>${esc(d.where)}</span></div>` +
     `<p>${esc(d.why)}</p><p class="tip">장면 팁 · ${esc(d.tip)}</p>` +
-    `<p class="tip">바로 연습 · ${esc(d.ch)} 채널 영상</p>` +
-    `<div class="row">${d.eps.map(([ep, vid]) => { const sc = S.mine.find(x => x.kind === "yt" && x.vid === vid); return `<button class="btn${sc ? "" : " primary"}" type="button" data-ep="${esc(vid)}" data-d="${esc(d.zh)}" data-epn="${esc(ep)}" data-ch="${esc(d.ch)}">${esc(ep)}${sc ? " · " + sc.clips.length + "구간" : ""}</button>`; }).join("")}</div>` +
+    `<p class="tip">회차를 누르면 바로 연습을 시작해요.</p>` +
+    `<div class="row">${d.eps.map(([ep, vid]) => { const sc = S.mine.find(x => x.kind === "yt" && x.vid === vid); return `<button class="btn${sc ? "" : " primary"}" type="button" data-ep="${esc(vid)}" data-d="${esc(d.zh)}" data-epn="${esc(ep)}" data-ch="${esc(d.ch)}">${esc(ep)}${sc ? " · 장면 " + (sc.done || []).length : ""}</button>`; }).join("")}</div>` +
     `<div class="row"><a class="btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent(d.q)}" target="_blank" rel="noopener">다른 회차 찾기</a>` +
     `<button class="btn" type="button" data-add="${esc(d.zh)}">링크 직접 넣기</button></div></article>`).join("");
 }
@@ -1067,27 +1450,38 @@ function switchView(v) {
   document.querySelectorAll(".nav button").forEach(b => { if (b.dataset.v === v) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("#topPg").hidden = v !== "vPractice";
   if (v === "vScenes") renderScenes();
+  if (v === "vDramas") renderDramas();
   window.scrollTo(0, 0);
 }
 
+function applyZs() { document.documentElement.style.setProperty("--zh-scale", S.zs); }
 /* ================= events ================= */
 $("#playBtn").onclick = togglePlay;
 $("#prevBtn").onclick = () => go(-1);
 $("#nextBtn").onclick = () => go(1);
 $("#okBtn").onclick = () => {
+  if (isYT()) { const { s } = ytRange(), d = ytDone(), i = d.indexOf(s); if (i < 0) d.push(s); else d.splice(i, 1); saveMine(); renderLine(); renderList(); return; }
   const it = cur(); if (!it) return;
   const p = (PROG[it.id] ||= { r: 0, ok: false }); p.ok = !p.ok; saveProg(); updateRow(it); renderLine();
   if (p.ok) { el.seal.classList.remove("stamp"); void el.seal.offsetWidth; el.seal.classList.add("stamp"); }
 };
 $("#modes").onclick = e => { const b = e.target.closest("button"); if (b) applyMode(+b.dataset.m); };
+$("#recT").onchange = e => { S.rec = e.target.checked; savePrefs(); if (S.rec) ensureMic(); };
+$("#cmpBtn").onclick = playCompare;
+$("#mineBtn").onclick = playMine;
+$("#askYes").onclick = () => { const a = $("#okAsk"), it = items().find(x => x.id === a.dataset.id); a.hidden = true; if (it) { const p = (PROG[it.id] ||= { r: 0, ok: false }); p.ok = true; saveProg(); updateRow(it); renderLine(); toast("熟 도장!"); } };
+$("#askNo").onclick = () => { $("#okAsk").hidden = true; };
+el.zh.addEventListener("click", e => { const r = e.target.closest("ruby"); if (!r || isYT()) return; pickChar(+r.dataset.i, S.scene.id + ":" + S.idx); });
+$("#pickChip").addEventListener("click", e => { if (e.target.closest("#pickAdd")) addPick(); });
 $("#autoT").onchange = e => { S.auto = e.target.checked; savePrefs(); };
 $("#skipT").onchange = e => { S.skipOk = e.target.checked; savePrefs(); };
 $("#pyT").onchange = e => { S.showPy = e.target.checked; renderLine(); };
 $("#koT").onchange = e => { S.showKo = e.target.checked; renderLine(); };
 $("#revealBtn").onclick = () => { S.reveal = true; renderLine(); };
-el.lines.onclick = e => { TTS.unlock(); const b = e.target.closest(".ln"); if (!b) return; const i = +b.dataset.i; if (S.playing || i === S.idx) play(i); else setIdx(i); };
-$("#markBtn").onclick = onMark;
-$("#justBtn").onclick = onJust;
+el.lines.onclick = e => { TTS.unlock(); const b = e.target.closest(".ln"); if (!b) return; if (b.dataset.t != null) { stop(); setRange(+b.dataset.t); return; } const i = +b.dataset.i; if (S.playing || i === S.idx) play(i); else setIdx(i); };
+$("#markBtn").onclick = () => { if (!ytReady) return toast("영상이 아직 준비되지 않았어요."); const t = ytNow(); stop(); setRange(Math.max(0, t - 1)); toast(fmtT(S.scene.s0) + "부터 " + (S.scene.len >= 60 ? S.scene.len / 60 + "분" : S.scene.len + "초") + " 연습합니다. ▶를 누르세요."); };
+$("#cutBtn").onclick = () => { if (!cutting) return; const t = ytNow() - 0.15; const last = cutting.t[cutting.t.length - 1]; if (last != null && t - last < 0.7) return; cutting.t.push(t); $("#cutN").textContent = cutting.t.length; };
+$("#justBtn").onclick = () => { if (!ytReady) return; try { YTP.seekTo(Math.max(0, ytNow() - 3), true); } catch {} };
 $("#maskBtn").onclick = () => { S.mask = !S.mask; renderStage(); };
 $("#maskUp").onclick = () => { S.maskH = Math.min(45, S.maskH + 3); savePrefs(); renderStage(); };
 $("#maskDown").onclick = () => { S.maskH = Math.max(8, S.maskH - 3); savePrefs(); renderStage(); };
@@ -1121,14 +1515,18 @@ $("#delClip").onclick = () => {
 };
 $("#renBtn").onclick = renameScene;
 $("#delSceneBtn").onclick = deleteScene;
-$("#qPaste").onclick = () => pasteInto($("#qUrl"));
-$("#qAdd").onclick = () => addYTFrom($("#qUrl"), null, "#qErr");
-$("#qUrl").addEventListener("keydown", e => { if (e.key === "Enter") addYTFrom($("#qUrl"), null, "#qErr"); });
-$("#qDramas").onclick = () => switchView("vDramas");
 $("#ytPaste").onclick = () => pasteInto($("#ytUrl"));
 $("#ytAdd").onclick = () => addYTFrom($("#ytUrl"), $("#ytTitle"), "#ytErr");
 $("#ytUrl").addEventListener("keydown", e => { if (e.key === "Enter") addYTFrom($("#ytUrl"), $("#ytTitle"), "#ytErr"); });
 $("#pasteAdd").onclick = addPaste;
+$("#vScenes").addEventListener("click", e => {
+  const lv = e.target.closest("[data-lv]"); if (lv) { S.level = +lv.dataset.lv; savePrefs(); renderScenes(); return; }
+  if (e.target.closest("#todayGo")) return startToday();
+  if (e.target.closest("#todayDrama")) return switchView("vDramas");
+  if (e.target.closest("#bkQuick")) return backupSave();
+  const sy = e.target.closest("[data-say]"); if (sy) { TTS.unlock(); TTS.speak(VOCAB[+sy.dataset.say].w, 0.75); return; }
+  const dl = e.target.closest("[data-del]"); if (dl) { VOCAB.splice(+dl.dataset.del, 1); saveVocab(); renderScenes(); return; }
+});
 $("#myList").onclick = $("#sampleList").onclick = e => { const b = e.target.closest(".deckrow"); if (!b) return; switchView("vPractice"); selectScene(b.dataset.id); };
 $("#voiceSel").onchange = e => { S.voiceURI = e.target.value; savePrefs(); TTS.refresh(); };
 $("#bkSave").onclick = backupSave;
@@ -1137,9 +1535,9 @@ function openEpisode(vid, dz, ep, ch) {
   let sc = S.mine.find(x => x.kind === "yt" && x.vid === vid);
   if (!sc) { sc = { id: uid("y"), kind: "yt", vid, t0: 0, title: dz + " " + ep, sub: "추천 · " + ch, clips: [], created: Date.now() }; S.mine.push(sc); saveMine(); }
   switchView("vPractice"); selectScene(sc.id); renderDramas();
-  if (!sc.clips.length) toast("영상을 재생하고, 따라 할 대사에서 '● 구간 시작'을 누르세요.");
+  if (!(sc.done || []).length) toast("대화가 시작되는 곳에서 '여기서부터 연습'을 누르고 ▶.");
 }
-$("#dramaList").onclick = e => { const p = e.target.closest("[data-ep]"); if (p) return openEpisode(p.dataset.ep, p.dataset.d, p.dataset.epn, p.dataset.ch); const b = e.target.closest("[data-add]"); if (!b) return; switchView("vScenes"); $("#ytTitle").value = b.dataset.add + " "; $("#ytUrl").focus(); };
+$("#dramaList").onclick = e => { const p = e.target.closest("[data-ep]"); if (p) return openEpisode(p.dataset.ep, p.dataset.d, p.dataset.epn, p.dataset.ch); const b = e.target.closest("[data-add]"); if (!b) return; switchView("vScenes"); const dt = $("#ytUrl").closest("details"); if (dt) dt.open = true; $("#ytTitle").value = b.dataset.add + " "; $("#ytUrl").focus(); };
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => { if (S.playing && b.dataset.v !== "vPractice") stop(); switchView(b.dataset.v); });
 document.addEventListener("keydown", e => {
   if (e.target.closest("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey || S.view !== "vPractice") return;
@@ -1154,8 +1552,9 @@ document.addEventListener("keydown", e => {
 document.addEventListener("visibilitychange", () => { if (document.hidden && S.playing) stop(); });
 
 /* ================= boot ================= */
-renderDramas(); renderOpts();
-selectScene(prefs.scene && allScenes().some(x => x.id === prefs.scene) ? prefs.scene : (S.mine[0]?.id || SAMPLES[0].id));
+applyZs(); renderDramas(); renderOpts();
+selectScene(prefs.scene && allScenes().some(x => x.id === prefs.scene) ? prefs.scene : todayDeck().id);
+switchView("vScenes");
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 window.__app = { S, items, play, stop, applyMode, selectScene, addClip, parseYT };
 })();
