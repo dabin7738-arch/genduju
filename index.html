@@ -308,6 +308,11 @@ details.panel[open]>summary::after{content:"－"}
 .cutbtn{border:1px dashed var(--s2);background:transparent;color:var(--s2);border-radius:12px;min-height:56px;font-size:14px;font-weight:600}
 .cutbtn b{font-family:var(--f-mono);margin-left:6px}
 .cutbtn:active{background:rgba(243,185,87,.15)}
+.tapcue{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;color:#fff;font-size:15px;font-weight:600;text-align:center;padding:20px;background:rgba(0,0,0,.35)}
+.tapcue span{width:72px;height:72px;border-radius:50%;background:var(--accent);display:grid;place-items:center;font-size:28px;animation:pulse 1.4s ease-in-out infinite}
+.tapcue small{font-weight:400;font-size:12.5px;opacity:.85}
+@keyframes pulse{50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.tapcue span{animation:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.28.1/dist/index.js"></script>
 </head>
@@ -329,6 +334,7 @@ details.panel[open]>summary::after{content:"－"}
         <div id="yt"></div>
         <div class="vid-msg" id="vidMsg" hidden></div>
         <div class="mask" id="mask" hidden>자막 가림</div>
+        <div class="tapcue" id="tapCue" hidden><span>▶</span>여기를 한 번 눌러 영상을 시작하세요<small>아이폰은 처음 한 번 직접 눌러야 소리가 나와요</small></div>
       </div>
       <div class="mark" id="mark" hidden>
         <button class="sbtn markbig" type="button" id="markBtn">여기서부터 연습</button>
@@ -1128,9 +1134,10 @@ const el = { stage: $("#stage"), zh: $("#zhline"), ko: $("#koline"), who: $("#wh
   phase: $("#phase"), phaseL: $("#phaseL"), bar: $("#bar"), barI: $("#barI"), seal: $("#stageSeal"), lines: $("#lines") };
 function setPhase(p, ms, label) {
   el.phase.dataset.p = p;
-  const L = { idle: isYT() ? (items().length ? "재생을 누르세요" : "영상을 보다가 구간을 찍으세요") : "재생을 누르세요",
+  const L = { idle: "▶를 누르면 시작해요",
     play: label || "듣기", speak: "지금 따라 말하세요", pause: "다음 소리 준비", end: "장면 끝 · 처음부터 다시", tap: "영상을 한 번 직접 눌러 주세요" };
   el.phaseL.textContent = L[p] || "";
+  const tc = document.getElementById("tapCue"); if (tc) tc.hidden = p !== "tap";
   if (p === "speak" || p === "pause") setBar("drain", ms);
   else if (p === "idle" || p === "end" || p === "tap") setBar("none");
 }
@@ -1613,7 +1620,7 @@ document.addEventListener("keydown", e => {
   else if ((k === "m" || k === "M") && isYT()) onMark();
   else if (/^[0-4]$/.test(k)) applyMode(+k);
 });
-document.addEventListener("visibilitychange", () => { if (document.hidden && S.playing) stop(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden && S.playing) setTimeout(() => { if (document.hidden && S.playing) stop(); }, 1500); });
 
 /* ================= boot ================= */
 applyZs(); renderDramas(); renderOpts();
